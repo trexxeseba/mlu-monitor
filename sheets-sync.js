@@ -90,16 +90,32 @@ async function writeResumen(sheets, sellers, allSnapshots) {
     ];
   });
 
-  const data = [{ range: 'RESUMEN!A1', values: header }];
-  if (rows.length > 0) {
-    data.push({ range: 'RESUMEN!A2', values: rows });
+  try {
+    // Usar update() en lugar de batchUpdate() - tiene estructura más clara
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: 'RESUMEN!A1',
+      valueInputOption: 'RAW',
+      resource: {
+        values: header
+      }
+    });
+
+    if (rows.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range: 'RESUMEN!A2',
+        valueInputOption: 'RAW',
+        resource: {
+          values: rows
+        }
+      });
+    }
+  } catch (err) {
+    console.error(`  [!] Error en writeResumen: ${err.message}`);
+    throw err;
   }
 
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: SHEET_ID,
-    valueInputOption: 'RAW',
-    requestBody: { data }
-  });
   console.log(`  [✓] RESUMEN: ${rows.length} vendedores`);
 }
 
@@ -115,16 +131,31 @@ async function writeProductos(sheets, products) {
     p.timestamp ? new Date(p.timestamp).toLocaleDateString('es-UY') : '—'
   ]);
 
-  const data = [{ range: 'PRODUCTOS!A1', values: header }];
-  if (rows.length > 0) {
-    data.push({ range: 'PRODUCTOS!A2', values: rows });
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: 'PRODUCTOS!A1',
+      valueInputOption: 'RAW',
+      resource: {
+        values: header
+      }
+    });
+
+    if (rows.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range: 'PRODUCTOS!A2',
+        valueInputOption: 'RAW',
+        resource: {
+          values: rows
+        }
+      });
+    }
+  } catch (err) {
+    console.error(`  [!] Error en writeProductos: ${err.message}`);
+    throw err;
   }
 
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: SHEET_ID,
-    valueInputOption: 'RAW',
-    requestBody: { data }
-  });
   console.log(`  [✓] PRODUCTOS: ${rows.length} items`);
 }
 
@@ -140,16 +171,31 @@ async function writeTimeline(sheets, changes) {
     c.price || '—'
   ]);
 
-  const data = [{ range: 'TIMELINE!A1', values: header }];
-  if (rows.length > 0) {
-    data.push({ range: 'TIMELINE!A2', values: rows });
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: 'TIMELINE!A1',
+      valueInputOption: 'RAW',
+      resource: {
+        values: header
+      }
+    });
+
+    if (rows.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range: 'TIMELINE!A2',
+        valueInputOption: 'RAW',
+        resource: {
+          values: rows
+        }
+      });
+    }
+  } catch (err) {
+    console.error(`  [!] Error en writeTimeline: ${err.message}`);
+    throw err;
   }
 
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: SHEET_ID,
-    valueInputOption: 'RAW',
-    requestBody: { data }
-  });
   console.log(`  [✓] TIMELINE: ${rows.length} cambios recientes`);
 }
 
