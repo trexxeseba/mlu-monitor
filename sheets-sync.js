@@ -165,7 +165,7 @@ async function main() {
     
     const { data: sellers, error: sellersErr } = await supabase
       .from('sellers')
-      .select('*, snapshots(count)', { count: 'exact' })
+      .select('*')
       .eq('activo', true);
     
     if (sellersErr) throw sellersErr;
