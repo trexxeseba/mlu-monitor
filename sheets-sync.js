@@ -7,7 +7,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://drggfikyqtooqxqqwefy.s
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
 const SHEET_ID = process.env.SHEET_ID || '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
 
-// Si viene desde GitHub Actions, escribir credenciales a archivo temporal
+// Credenciales de Google
 if (process.env.GOOGLE_CREDENTIALS) {
   const tmpPath = '/tmp/credentials.json';
   fs.writeFileSync(tmpPath, process.env.GOOGLE_CREDENTIALS);
@@ -30,6 +30,30 @@ async function getSheetsClient() {
   return _sheets;
 }
 
+async function ensureSheets(sheets) {
+  try {
+    const res = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+    const existing = res.data.sheets.map(s => s.properties.title);
+
+    const needed = ['RESUMEN', 'PRODUCTOS', 'TIMELINE'];
+    for (const name of needed) {
+      if (!existing.includes(name)) {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SHEET_ID,
+          requestBody: {
+            requests: [{
+              addSheet: { properties: { title: name } }
+            }]
+          }
+        });
+        console.log(`  [+] Sheet creado: ${name}`);
+      }
+    }
+  } catch (err) {
+    console.error(`  [!] Error en ensureSheets: ${err.message}`);
+  }
+}
+
 async function clearSheets(sheets) {
   const sheetNames = ['RESUMEN', 'PRODUCTOS', 'TIMELINE'];
   for (const name of sheetNames) {
@@ -39,40 +63,21 @@ async function clearSheets(sheets) {
         range: `${name}!A:Z`,
       });
     } catch (e) {
-      console.log(`  [${name}] Sheet creada o no existía (first time)`);
+      // ignorar si no existe
     }
   }
 }
 
-async function ensureSheets(sheets) {
-  const res = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
-  const existing = res.data.sheets.map(s => s.properties.title);
-
-  const needed = ['RESUMEN', 'PRODUCTOS', 'TIMELINE'];
-  for (const name of needed) {
-    if (!existing.includes(name)) {
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId: SHEET_ID,
-        requestBody: {
-          requests: [{
-            addSheet: { properties: { title: name } }
-          }]
-        }
-      });
-      console.log(`  [+] Sheet creado: ${name}`);
-    }
-  }
-}
-
-async function writeResumen(sheets, sellers) {
+async function writeResumen(sheets, sellers, allSnapshots) {
   const header = [['VENDEDOR ID', 'NICKNAME', 'TOTAL ITEMS', 'ITEMS VENDIDOS', '% VENTA', 'ÚLTIMO UPDATE']];
   
   const rows = sellers.map(seller => {
-    const soldItems = seller.sold_count || 0;
-    const totalItems = seller.total_count || 0;
+    const sellerSnapshots = allSnapshots.filter(s => s.seller_id === seller.id);
+    const totalItems = sellerSnapshots.length;
+    const soldItems = sellerSnapshots.filter(s => s.status === 'sold').length;
     const percentage = totalItems > 0 ? ((soldItems / totalItems) * 100).toFixed(1) : 0;
-    const lastUpdate = seller.last_snapshot_at 
-      ? new Date(seller.last_snapshot_at).toLocaleString('es-UY', { timeZone: 'America/Montevideo' })
+    const lastUpdate = sellerSnapshots.length > 0
+      ? new Date(Math.max(...sellerSnapshots.map(s => new Date(s.timestamp)))).toLocaleString('es-UY', { timeZone: 'America/Montevideo' })
       : '—';
     
     return [
@@ -160,57 +165,39 @@ async function main() {
     // Clear existing
     await clearSheets(sheets);
 
-    // Fetch data from Supabase
+    // Fetch data from Supabase - SIN RELACIONES
     console.log('\n[→] Leyendo datos de Supabase...');
     
+    // Sellers
     const { data: sellers, error: sellersErr } = await supabase
       .from('sellers')
-      .select('*')
-      .eq('activo', true);
+      .select('id, seller_id, nombre_real, nickname, activo');
     
-    if (sellersErr) throw sellersErr;
-    console.log(`  [✓] ${sellers.length} vendedores activos`);
+    if (sellersErr) throw new Error(`sellers query failed: ${sellersErr.message}`);
+    console.log(`  [✓] ${sellers?.length || 0} vendedores`);
 
-    // Enrich sellers with stats
-    const enrichedSellers = await Promise.all(sellers.map(async (seller) => {
-      const { data: snapshots } = await supabase
-        .from('snapshots')
-        .select('*')
-        .eq('seller_id', String(seller.id))
-        .order('timestamp', { ascending: false })
-        .limit(500);
-
-      const total = snapshots?.length || 0;
-      const sold = snapshots?.filter(s => s.status === 'sold').length || 0;
-      const lastSnapshot = snapshots?.[0]?.timestamp;
-
-      return {
-        ...seller,
-        total_count: total,
-        sold_count: sold,
-        last_snapshot_at: lastSnapshot
-      };
-    }));
-
-    // Get all products
-    const { data: products } = await supabase
+    // Snapshots (todos, sin relación)
+    const { data: allSnapshots, error: snapshotsErr } = await supabase
       .from('snapshots')
       .select('*')
       .order('timestamp', { ascending: false });
     
-    console.log(`  [✓] ${products?.length || 0} productos totales`);
+    if (snapshotsErr) throw new Error(`snapshots query failed: ${snapshotsErr.message}`);
+    console.log(`  [✓] ${allSnapshots?.length || 0} snapshots totales`);
 
     // Write to Sheets
     console.log('\n[→] Escribiendo a Google Sheets...');
-    await writeResumen(sheets, enrichedSellers);
-    await writeProductos(sheets, products || []);
-    await writeTimeline(sheets, products || []);
+    await writeResumen(sheets, sellers || [], allSnapshots || []);
+    await writeProductos(sheets, allSnapshots || []);
+    await writeTimeline(sheets, allSnapshots || []);
 
     console.log('\n[✓] MLU Sheets Sync — completado');
+    process.exit(0);
   } catch (err) {
     console.error(`[✗] Error: ${err.message}`);
+    console.error(err.stack);
     process.exit(1);
   }
 }
 
-main().catch(console.error);
+main();
