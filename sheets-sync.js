@@ -1,15 +1,15 @@
 const { createClient } = require('@supabase/supabase-js');
-const SheetWriter = require('./sheetWriter');
+const { SheetWriter } = require('./sheetWriter');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://drggfikyqtooqxqqwefy.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
 const SHEET_ID = process.env.SHEET_ID || '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
 
-// Parse Google Credentials from env var
+// Parse Google Credentials from env
 function getGoogleCreds() {
   const credsJson = process.env.GOOGLE_CREDENTIALS;
   if (!credsJson) {
-    throw new Error('GOOGLE_CREDENTIALS env var not set');
+    throw new Error('GOOGLE_CREDENTIALS environment variable is required');
   }
   
   try {
@@ -29,12 +29,12 @@ async function syncData() {
     // Initialize SheetWriter
     console.log('\n[→] Inicializando Google Sheets...');
     const creds = getGoogleCreds();
-    const writer = new SheetWriter(SHEET_ID, creds.client_email, creds.private_key);
+    const writer = new SheetWriter({
+      spreadsheetId: SHEET_ID,
+      clientEmail: creds.client_email,
+      privateKey: creds.private_key
+    });
     await writer.init();
-    console.log('[✓] Google Sheets conectado');
-
-    // Ensure sheets exist
-    await writer.ensureSheets(['RESUMEN', 'PRODUCTOS', 'TIMELINE']);
 
     // Fetch data from Supabase
     console.log('\n[→] Leyendo datos de Supabase...');
@@ -70,7 +70,7 @@ async function syncData() {
       return [seller.seller_id, seller.nombre_real || seller.nickname || '—', totalItems, soldItems, `${percentage}%`, lastUpdate];
     });
 
-    await writer.writeSheet('RESUMEN', resumenHeader, resumenRows);
+    await writer.overwriteSheet('RESUMEN', resumenHeader, resumenRows);
 
     // Build PRODUCTOS data
     const productosHeader = ['SELLER ID', 'ITEM ID', 'TÍTULO', 'PRECIO', 'ESTADO', 'LAST SEEN'];
@@ -83,7 +83,7 @@ async function syncData() {
       p.timestamp ? new Date(p.timestamp).toLocaleDateString('es-UY') : '—'
     ]);
 
-    await writer.writeSheet('PRODUCTOS', productosHeader, productosRows);
+    await writer.overwriteSheet('PRODUCTOS', productosHeader, productosRows);
 
     // Build TIMELINE data
     const timelineHeader = ['FECHA', 'SELLER ID', 'TIPO', 'ITEM ID', 'TÍTULO', 'PRECIO'];
@@ -96,13 +96,16 @@ async function syncData() {
       c.price || '—'
     ]);
 
-    await writer.writeSheet('TIMELINE', timelineHeader, timelineRows);
+    await writer.overwriteSheet('TIMELINE', timelineHeader, timelineRows);
 
     console.log('\n[✓] MLU Sheets Sync — completado exitosamente');
     process.exit(0);
+
   } catch (err) {
-    console.error(`\n[✗] Error: ${err.message}`);
-    console.error(err.stack);
+    console.error(`\n[✗] Error fatal: ${err.message}`);
+    if (err.stack) {
+      console.error(err.stack);
+    }
     process.exit(1);
   }
 }
