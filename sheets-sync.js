@@ -90,15 +90,15 @@ async function writeResumen(sheets, sellers, allSnapshots) {
     ];
   });
 
+  const data = [{ range: 'RESUMEN!A1', values: header }];
+  if (rows.length > 0) {
+    data.push({ range: 'RESUMEN!A2', values: rows });
+  }
+
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
     valueInputOption: 'RAW',
-    requestBody: {
-      data: [
-        { range: 'RESUMEN!A1', values: Array.isArray(header[0]) ? header : [header] },
-        { range: 'RESUMEN!A2', values: Array.isArray(rows[0]) ? rows : [rows] }
-      ]
-    }
+    requestBody: { data }
   });
   console.log(`  [✓] RESUMEN: ${rows.length} vendedores`);
 }
@@ -115,15 +115,15 @@ async function writeProductos(sheets, products) {
     p.timestamp ? new Date(p.timestamp).toLocaleDateString('es-UY') : '—'
   ]);
 
+  const data = [{ range: 'PRODUCTOS!A1', values: header }];
+  if (rows.length > 0) {
+    data.push({ range: 'PRODUCTOS!A2', values: rows });
+  }
+
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
     valueInputOption: 'RAW',
-    requestBody: {
-      data: [
-        { range: 'PRODUCTOS!A1', values: Array.isArray(header[0]) ? header : [header] },
-        { range: 'PRODUCTOS!A2', values: Array.isArray(rows[0]) ? rows : [rows] }
-      ]
-    }
+    requestBody: { data }
   });
   console.log(`  [✓] PRODUCTOS: ${rows.length} items`);
 }
@@ -140,15 +140,15 @@ async function writeTimeline(sheets, changes) {
     c.price || '—'
   ]);
 
+  const data = [{ range: 'TIMELINE!A1', values: header }];
+  if (rows.length > 0) {
+    data.push({ range: 'TIMELINE!A2', values: rows });
+  }
+
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
     valueInputOption: 'RAW',
-    requestBody: {
-      data: [
-        { range: 'TIMELINE!A1', values: Array.isArray(header[0]) ? header : [header] },
-        { range: 'TIMELINE!A2', values: Array.isArray(rows[0]) ? rows : [rows] }
-      ]
-    }
+    requestBody: { data }
   });
   console.log(`  [✓] TIMELINE: ${rows.length} cambios recientes`);
 }
