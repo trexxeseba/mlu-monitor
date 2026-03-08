@@ -92,8 +92,8 @@ async function writeResumen(sheets, sellers, allSnapshots) {
 
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
+    valueInputOption: 'RAW',
     requestBody: {
-      valueInputOption: 'RAW',
       data: [
         { range: 'RESUMEN!A1', values: header },
         { range: 'RESUMEN!A2', values: rows }
@@ -117,8 +117,8 @@ async function writeProductos(sheets, products) {
 
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
+    valueInputOption: 'RAW',
     requestBody: {
-      valueInputOption: 'RAW',
       data: [
         { range: 'PRODUCTOS!A1', values: header },
         { range: 'PRODUCTOS!A2', values: rows }
@@ -142,8 +142,8 @@ async function writeTimeline(sheets, changes) {
 
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SHEET_ID,
+    valueInputOption: 'RAW',
     requestBody: {
-      valueInputOption: 'RAW',
       data: [
         { range: 'TIMELINE!A1', values: header },
         { range: 'TIMELINE!A2', values: rows }
