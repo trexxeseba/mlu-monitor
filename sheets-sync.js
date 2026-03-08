@@ -1,15 +1,56 @@
 const { createClient } = require('@supabase/supabase-js');
-const https = require('https');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://drggfikyqtooqxqqwefy.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
 const SHEET_ID = process.env.SHEET_ID || '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
 
-// Parse Google Credentials desde JSON string (variable de entorno)
-let ACCESS_TOKEN = null;
+let sheetDoc = null;
 
-async function getGoogleAccessToken() {
-  if (ACCESS_TOKEN) return ACCESS_TOKEN;
+// Validación estricta de datos
+function assert2D(values, name = 'values') {
+  if (!Array.isArray(values)) {
+    throw new Error(`${name} debe ser un array`);
+  }
+  if (values.length === 0) {
+    throw new Error(`${name} no puede estar vacío`);
+  }
+  if (!values.every(row => Array.isArray(row))) {
+    throw new Error(`${name} debe ser array bidimensional [[...], [...]]`);
+  }
+}
+
+// Retry con backoff exponencial
+async function withRetry(fn, maxRetries = 4, label = 'Operation') {
+  let lastError;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      const status = err?.code || err?.response?.status || err?.status;
+      const retriable = [429, 500, 502, 503, 504].includes(status);
+
+      console.log(`  [!] ${label} - Attempt ${attempt + 1}/${maxRetries + 1} failed: ${err.message}`);
+
+      if (!retriable || attempt === maxRetries) {
+        throw err;
+      }
+
+      const delayMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+      console.log(`      Retrying in ${delayMs}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError;
+}
+
+// Inicializar documento
+async function getSheetDoc() {
+  if (sheetDoc) return sheetDoc;
 
   const credsJson = process.env.GOOGLE_CREDENTIALS;
   if (!credsJson) {
@@ -17,109 +58,79 @@ async function getGoogleAccessToken() {
   }
 
   const creds = JSON.parse(credsJson);
-  const jwt = Buffer.from(JSON.stringify({
-    iss: creds.client_email,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: Math.floor(Date.now() / 1000) + 3600,
-    iat: Math.floor(Date.now() / 1000)
-  })).toString('base64');
+  
+  const serviceAccountAuth = new JWT({
+    email: creds.client_email,
+    key: creds.private_key,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
 
-  const header = Buffer.from(JSON.stringify({
-    alg: 'RS256',
-    typ: 'JWT',
-    kid: creds.private_key_id
-  })).toString('base64');
+  sheetDoc = new GoogleSpreadsheet(SHEET_ID, serviceAccountAuth);
+  await withRetry(() => sheetDoc.loadInfo(), 3, 'Load Sheet Info');
+  
+  return sheetDoc;
+}
 
-  // Sign con private key (simplificado - usar librería crypto en prod)
-  const crypto = require('crypto');
-  const sign = crypto.createSign('RSA-SHA256');
-  sign.update(`${header}.${jwt}`);
-  const signature = sign.sign(creds.private_key, 'base64');
-  const token = `${header}.${jwt}.${signature}`;
+// Encapsulación única de escritura
+const SheetWriter = {
+  async ensureSheets(sheetNames) {
+    const doc = await getSheetDoc();
+    const existingSheets = doc.sheetsByTitle;
 
-  return new Promise((resolve, reject) => {
-    const postData = `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${token}`;
+    for (const name of sheetNames) {
+      if (!existingSheets[name]) {
+        await withRetry(
+          () => doc.addSheet({ title: name }),
+          3,
+          `Create sheet "${name}"`
+        );
+        console.log(`  [+] Sheet creado: ${name}`);
+      }
+    }
+  },
+
+  async updateBlock(sheetName, values) {
+    assert2D(values);
     
-    const options = {
-      hostname: 'oauth2.googleapis.com',
-      port: 443,
-      path: '/token',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(postData)
-      }
-    };
+    const doc = await getSheetDoc();
+    const sheet = doc.sheetsByTitle[sheetName];
+    
+    if (!sheet) {
+      throw new Error(`Sheet "${sheetName}" no existe`);
+    }
 
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          ACCESS_TOKEN = parsed.access_token;
-          resolve(ACCESS_TOKEN);
-        } catch (e) {
-          reject(new Error(`Failed to parse token: ${data}`));
-        }
-      });
-    });
+    return withRetry(async () => {
+      await sheet.clear();
+      await sheet.addRows(values);
+      return { updatedCells: values.length * values[0].length };
+    }, 3, `Update ${sheetName}`);
+  },
 
-    req.on('error', reject);
-    req.write(postData);
-    req.end();
-  });
-}
+  async appendRows(sheetName, values) {
+    assert2D(values);
+    
+    const doc = await getSheetDoc();
+    const sheet = doc.sheetsByTitle[sheetName];
+    
+    if (!sheet) {
+      throw new Error(`Sheet "${sheetName}" no existe`);
+    }
 
-// Escritura via REST API puro - 100% confiable
-async function writeToSheets(range, values) {
-  const token = await getGoogleAccessToken();
-
-  const payload = {
-    values: values
-  };
-
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify(payload);
-    const options = {
-      hostname: 'sheets.googleapis.com',
-      port: 443,
-      path: `/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`,
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(JSON.parse(data));
-        } else {
-          reject(new Error(`HTTP ${res.statusCode}: ${data}`));
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
+    return withRetry(async () => {
+      await sheet.addRows(values);
+      return { appendedRows: values.length };
+    }, 3, `Append to ${sheetName}`);
+  }
+};
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function syncData() {
-  console.log('📊 MLU Sheets Sync (REST API) — inicio');
+  console.log('📊 MLU Sheets Sync (google-spreadsheet) — inicio');
   console.log(new Date().toISOString());
 
   try {
-    // Fetch data from Supabase
+    // Fetch from Supabase
     console.log('\n[→] Leyendo datos de Supabase...');
     
     const { data: sellers, error: sellersErr } = await supabase
@@ -137,12 +148,16 @@ async function syncData() {
     if (snapshotsErr) throw new Error(`snapshots query failed: ${snapshotsErr.message}`);
     console.log(`  [✓] ${allSnapshots?.length || 0} snapshots totales`);
 
-    // Write to Sheets via REST API
-    console.log('\n[→] Escribiendo a Google Sheets (REST API)...');
+    // Ensure sheets exist
+    console.log('\n[→] Verificando hojas en Google Sheets...');
+    await SheetWriter.ensureSheets(['RESUMEN', 'PRODUCTOS', 'TIMELINE']);
+
+    // Write to Sheets using SheetWriter (single encapsulation point)
+    console.log('\n[→] Escribiendo a Google Sheets...');
 
     // RESUMEN
-    const resumenHeader = [['VENDEDOR ID', 'NICKNAME', 'TOTAL ITEMS', 'ITEMS VENDIDOS', '% VENTA', 'ÚLTIMO UPDATE']];
-    const resumenRows = sellers.map(seller => {
+    const resumenData = [['VENDEDOR ID', 'NICKNAME', 'TOTAL ITEMS', 'ITEMS VENDIDOS', '% VENTA', 'ÚLTIMO UPDATE']];
+    sellers.forEach(seller => {
       const sellerSnapshots = allSnapshots.filter(s => s.seller_id === seller.id);
       const totalItems = sellerSnapshots.length;
       const soldItems = sellerSnapshots.filter(s => s.status === 'sold').length;
@@ -151,48 +166,43 @@ async function syncData() {
         ? new Date(Math.max(...sellerSnapshots.map(s => new Date(s.timestamp)))).toLocaleString('es-UY', { timeZone: 'America/Montevideo' })
         : '—';
       
-      return [seller.seller_id, seller.nombre_real || seller.nickname || '—', totalItems, soldItems, `${percentage}%`, lastUpdate];
+      resumenData.push([seller.seller_id, seller.nombre_real || seller.nickname || '—', totalItems, soldItems, `${percentage}%`, lastUpdate]);
     });
 
-    await writeToSheets('RESUMEN!A1', resumenHeader);
-    if (resumenRows.length > 0) {
-      await writeToSheets('RESUMEN!A2', resumenRows);
-    }
-    console.log(`  [✓] RESUMEN: ${resumenRows.length} vendedores`);
+    await SheetWriter.updateBlock('RESUMEN', resumenData);
+    console.log(`  [✓] RESUMEN: ${resumenData.length - 1} vendedores`);
 
     // PRODUCTOS
-    const productosHeader = [['SELLER ID', 'ITEM ID', 'TÍTULO', 'PRECIO', 'ESTADO', 'LAST SEEN']];
-    const productosRows = allSnapshots.slice(0, 1000).map(p => [
-      p.seller_id,
-      p.meli_item_id || p.item_id || '—',
-      (p.title || '—').substring(0, 60),
-      p.price || '—',
-      p.status || 'active',
-      p.timestamp ? new Date(p.timestamp).toLocaleDateString('es-UY') : '—'
-    ]);
+    const productosData = [['SELLER ID', 'ITEM ID', 'TÍTULO', 'PRECIO', 'ESTADO', 'LAST SEEN']];
+    allSnapshots.slice(0, 1000).forEach(p => {
+      productosData.push([
+        p.seller_id,
+        p.meli_item_id || p.item_id || '—',
+        (p.title || '—').substring(0, 60),
+        p.price || '—',
+        p.status || 'active',
+        p.timestamp ? new Date(p.timestamp).toLocaleDateString('es-UY') : '—'
+      ]);
+    });
 
-    await writeToSheets('PRODUCTOS!A1', productosHeader);
-    if (productosRows.length > 0) {
-      await writeToSheets('PRODUCTOS!A2', productosRows);
-    }
-    console.log(`  [✓] PRODUCTOS: ${productosRows.length} items`);
+    await SheetWriter.updateBlock('PRODUCTOS', productosData);
+    console.log(`  [✓] PRODUCTOS: ${productosData.length - 1} items`);
 
     // TIMELINE
-    const timelineHeader = [['FECHA', 'SELLER ID', 'TIPO', 'ITEM ID', 'TÍTULO', 'PRECIO']];
-    const timelineRows = allSnapshots.slice(0, 500).map(c => [
-      c.timestamp ? new Date(c.timestamp).toLocaleString('es-UY', { timeZone: 'America/Montevideo' }) : '—',
-      c.seller_id,
-      c.change_type || 'unknown',
-      c.meli_item_id || c.item_id || '—',
-      (c.title || '—').substring(0, 60),
-      c.price || '—'
-    ]);
+    const timelineData = [['FECHA', 'SELLER ID', 'TIPO', 'ITEM ID', 'TÍTULO', 'PRECIO']];
+    allSnapshots.slice(0, 500).forEach(c => {
+      timelineData.push([
+        c.timestamp ? new Date(c.timestamp).toLocaleString('es-UY', { timeZone: 'America/Montevideo' }) : '—',
+        c.seller_id,
+        c.change_type || 'unknown',
+        c.meli_item_id || c.item_id || '—',
+        (c.title || '—').substring(0, 60),
+        c.price || '—'
+      ]);
+    });
 
-    await writeToSheets('TIMELINE!A1', timelineHeader);
-    if (timelineRows.length > 0) {
-      await writeToSheets('TIMELINE!A2', timelineRows);
-    }
-    console.log(`  [✓] TIMELINE: ${timelineRows.length} cambios`);
+    await SheetWriter.updateBlock('TIMELINE', timelineData);
+    console.log(`  [✓] TIMELINE: ${timelineData.length - 1} cambios`);
 
     console.log('\n[✓] MLU Sheets Sync — completado exitosamente');
     process.exit(0);
