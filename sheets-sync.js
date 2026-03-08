@@ -1,11 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
 const { google } = require('googleapis');
 const path = require('path');
+const fs = require('fs');
 
-const SUPABASE_URL = 'https://drggfikyqtooqxqqwefy.supabase.co';
-const SUPABASE_KEY = 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
-const SHEET_ID = '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
-const CREDENTIALS_PATH = path.join(__dirname, 'clauditaaa-dbcde137b8d8.json');
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://drggfikyqtooqxqqwefy.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
+const SHEET_ID = process.env.SHEET_ID || '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
+
+// Si viene desde GitHub Actions, escribir credenciales a archivo temporal
+if (process.env.GOOGLE_CREDENTIALS) {
+  const tmpPath = '/tmp/credentials.json';
+  fs.writeFileSync(tmpPath, process.env.GOOGLE_CREDENTIALS);
+}
+const CREDENTIALS_PATH = process.env.GOOGLE_CREDENTIALS 
+  ? '/tmp/credentials.json'
+  : path.join(__dirname, 'clauditaaa-dbcde137b8d8.json');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 

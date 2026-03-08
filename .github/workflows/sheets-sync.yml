@@ -1,0 +1,35 @@
+name: MLU Sheets Sync (every 2h)
+
+on:
+  schedule:
+    # Corre cada 2 horas (UTC)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # También permite ejecutar manualmente
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run Sheets Sync
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: node sheets-sync.js
+      
+      - name: Log execution
+        if: always()
+        run: echo "✓ Sync completed at $(date)"
