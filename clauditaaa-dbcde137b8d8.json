@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "clauditaaa",
+  "private_key_id": "dbcde137b8d8e2ce579bfd1fbd25b8f30bb6b57c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC+YrFb2Me7Wf1X\nYPg5SINrggQp3COHI/gqQegWeCt44QDa1h5EKW6rq6SdbCNKdkKcCDc1OZQ2R+kV\ne3DYHJSbaiXixgyE6E9IrGUd7qYDQ01qfpBatjr0PmgtEEgdsYmmLHQft+feOYG7\nUFR0XHRSaf5/QZT66E1dxQjz/UeVOl9FDIS/n3r9M8NQ/b0YARyOPkefhZiW9w4s\nmEcaJ6wVz3gbEORrZonLKarlbfdS95WpI1Dx9RLsawSPyGQ6jwCTrwb3lD0TCLPY\nKLF14V8eCZgFvtrpQbZf34JUIKGh1AFfDdM/qmzBA/QpfhS64CLDY2y/Sb/KsROZ\nPerj6f0BAgMBAAECggEAC/0tDAqfsUWedYUuvHS7ieabGoO5XQY/13FlCx0wJ6GL\nqzw2lbZCON9LM3qe0k6WLTs7NsfUdIKcw/SNC57pIMxTbG9qVGhIrdvlVjg0DhqL\n4nvr3TqCheT0LHpNAEmw0F0WRvUOzeizKbeKSfWUgagZFaxslExSqugAg1Tc0CHM\nEbOWaEjieIYKTvR0pZMtpR73RqzlTjuoI00J3+FuGAfDW2TUGDMnlKZ93KpL8Dxw\nunpyILkaIoNo1+jPNYTLgz2WNDROTszG+w4uRvZsh+72otLRwYnURTp0aYvL/VPf\nyELZG8nKKr58CfpKFLmUQnCR0NhTCHvAwtaaV56GfQKBgQDkkuDQnnCsRSWfg7m2\naObGuJSQXkzS27XSWtmT+9U82T4ArGR5IihhZAjEqfsppqWZ87j3AXRw+xdY9KrJ\nZ5MSxbrGrf8xqBa1IA1aztm1pR4og0/USHXxKFSN3E34SctnSyKpojYcIA8aXRAd\nqfCpg/MSery9TfoKP7zK3pkS/wKBgQDVOsiCkz0m1sppteUVAtrdSm21KwER9YD6\nYTXpVpCXN70crAKceXyyvjcDMNTWE4P7Z07lb4bYLmSlAspKWabx9VZbGPsNlQ8J\n9QLA9sH4meOlfUHFCiZI53p6JNAlpTVBzMriPY+8N/XbUhXBCWOIoVVqXrgRA6UI\nUgnEY0zv/wKBgGvDW76/lDuD9jL4dawsVPFHwLM34lxfPZ/JOV9tkaE4guTqYgxC\nMGuKMCAYS9PdP6IPqBq8UtuZZe6Im6SM8mgdVOuqyO/uYZZPYDx53WaoTEmpbw+U\nghaKfyLKxO/UStOONu9nDL/B1Z0GVzzFDDO/g/AocaeGheYjGq1CuUSdAoGBAJ1g\n9KtDZ2gqMl2RjlJSuB2KmKyV4AVUUWz7oOHnLXMfBaqK3qaFGF+I+2uUeBLFdq1w\n04+OIFWg8FHGXG5B+3EsZh94sZuVv/LWbsDjn8kQNDBp4cg/tIAssX5De4m9hTBa\nqggP7e260/Cbhkji2B75DOUkofCU4xLgEitsK1YbAoGBAKPAgPnvN+oIg7wi4DH1\nOkYvjhDtuWIy3o/GapmeJbdlzlv0Q7RvvB0OoMtdQ+sF/CA5jzrsnTkhCqTR+hGm\nJXTlCctGwN+F3pQdjalVPCayU8+jOAFBQc/b1O4+pRC/sKHi1X5XfAunvMjeX8vJ\n5Hh7ov/4CTMN9FyVuAr0anUI\n-----END PRIVATE KEY-----\n",
+  "client_email": "mlu-monitor-sheets@clauditaaa.iam.gserviceaccount.com",
+  "client_id": "106323363138105283922",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mlu-monitor-sheets%40clauditaaa.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

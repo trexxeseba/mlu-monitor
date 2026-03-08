@@ -8,7 +8,7 @@ const SUPABASE_KEY = 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
 const BD_API_KEY = '0701164e-6bc2-4f78-af4d-4910090ac9e7';
 const BD_ZONE = 'web_unlocker1mlu_monitor';
 const SHEET_ID = '1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE';
-const CREDENTIALS_PATH = path.join(__dirname, 'clauditaaa-0b93ce3a496b.json');
+const CREDENTIALS_PATH = path.join(__dirname, 'clauditaaa-dbcde137b8d8.json');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
