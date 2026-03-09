@@ -1,12 +1,14 @@
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://drggfikyqtooqxqqwefy.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_secret_L5BFG8tcXPOc8qFhU7bCUg_FeFRH61W';
-const BD_API_KEY  = process.env.BD_API_KEY  || '0701164e-6bc2-4f78-af4d-4910090ac9e7';
-const BD_ZONE     = process.env.BD_ZONE     || 'web_unlocker1mlu_monitor';
+// Fail fast si faltan secrets
+['SUPABASE_URL','SUPABASE_KEY','BD_API_KEY','BD_ZONE'].forEach(k => {
+  if (!process.env[k]) { console.error(`FATAL: falta secret ${k}`); process.exit(1); }
+});
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const BD_API_KEY = process.env.BD_API_KEY;
+const BD_ZONE    = process.env.BD_ZONE;
 
 // ─── Bright Data ──────────────────────────────────────────────────────────────
 
@@ -25,7 +27,7 @@ function scrape(url) {
     };
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => (data += chunk));
+      res.on('data', c => data += c);
       res.on('end', () => resolve({ status: res.statusCode, html: data }));
     });
     req.on('error', reject);
@@ -34,72 +36,61 @@ function scrape(url) {
   });
 }
 
-// ─── Extraer items del HTML (polycard) ────────────────────────────────────────
-
-function extractItems(html) {
-  const scriptMatches = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)];
-  const bigScript = scriptMatches.find(
-    (m) => m[1].includes('"polycard"') && m[1].includes('"components"')
-  );
-  if (!bigScript) return [];
-
-  const content = bigScript[1];
-  const seen = new Set();
-  const items = [];
-  let searchFrom = 0;
-
-  while (true) {
-    const polycardKey = '"polycard":';
-    const keyIdx = content.indexOf(polycardKey, searchFrom);
-    if (keyIdx === -1) break;
-
-    const objStart = content.indexOf('{', keyIdx + polycardKey.length);
-    if (objStart === -1) break;
-
-    const objStr = extractBalancedJson(content, objStart);
-    if (!objStr) { searchFrom = keyIdx + 1; continue; }
-
-    try {
-      const polycard = JSON.parse(objStr);
-      const item = parsePolycard(polycard);
-      if (item && !seen.has(item.id)) {
-        seen.add(item.id);
-        items.push(item);
-      }
-    } catch { /* skip */ }
-
-    searchFrom = objStart + objStr.length;
-  }
-
-  return items;
-}
+// ─── Parseo polycard ──────────────────────────────────────────────────────────
 
 function extractBalancedJson(str, start) {
   let depth = 0, inString = false, escape = false;
   for (let i = start; i < str.length; i++) {
     const ch = str[i];
-    if (escape) { escape = false; continue; }
+    if (escape)              { escape = false; continue; }
     if (ch === '\\' && inString) { escape = true; continue; }
-    if (ch === '"') { inString = !inString; continue; }
-    if (inString) continue;
+    if (ch === '"')          { inString = !inString; continue; }
+    if (inString)            continue;
     if (ch === '{') depth++;
     else if (ch === '}') { depth--; if (depth === 0) return str.substring(start, i + 1); }
   }
   return null;
 }
 
-function parsePolycard(polycard) {
-  const meta = polycard.metadata;
+function parsePolycard(pc) {
+  const meta = pc.metadata;
   if (!meta?.id) return null;
-  const components = polycard.components ?? [];
-  const titleComp = components.find((c) => c.type === 'title');
-  const priceComp = components.find((c) => c.type === 'price');
+  const comps     = pc.components ?? [];
+  const titleComp = comps.find(c => c.type === 'title');
+  const priceComp = comps.find(c => c.type === 'price');
   return {
-    id: meta.id,
-    title: titleComp?.title?.text ?? null,
-    price: priceComp?.price?.current_price?.value ?? null,
+    id:       meta.id,
+    title:    titleComp?.title?.text ?? null,
+    price:    priceComp?.price?.current_price?.value ?? null,
     currency: priceComp?.price?.current_price?.currency ?? null,
   };
+}
+
+function extractItems(html) {
+  const scripts = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)];
+  const big = scripts.find(m => m[1].includes('"polycard"') && m[1].includes('"components"'));
+  if (!big) return [];
+
+  const content = big[1];
+  const seen = new Set();
+  const items = [];
+  let from = 0;
+  const KEY = '"polycard":';
+
+  while (true) {
+    const ki = content.indexOf(KEY, from);
+    if (ki === -1) break;
+    const os = content.indexOf('{', ki + KEY.length);
+    if (os === -1) break;
+    const obj = extractBalancedJson(content, os);
+    if (!obj) { from = ki + 1; continue; }
+    try {
+      const item = parsePolycard(JSON.parse(obj));
+      if (item && !seen.has(item.id)) { seen.add(item.id); items.push(item); }
+    } catch { /* skip */ }
+    from = os + obj.length;
+  }
+  return items;
 }
 
 // ─── Supabase ─────────────────────────────────────────────────────────────────
@@ -110,23 +101,22 @@ async function getActiveSellers() {
   return data;
 }
 
+// INSERT siempre — nunca upsert, para preservar historial de snapshots
 async function saveSnapshot(sellerId, items) {
   const now = new Date().toISOString();
-  const rows = items.map((item) => ({
-    seller_id: String(sellerId),
-    meli_item_id: item.id,
-    item_id: item.id,
-    title: item.title,
-    price: item.price,
-    sold_quantity: 0,
+  const rows = items.map(item => ({
+    seller_id:          String(sellerId),
+    meli_item_id:       item.id,
+    item_id:            item.id,
+    title:              item.title,
+    price:              item.price,
+    sold_quantity:      0,
     available_quantity: 0,
-    status: 'active',
-    timestamp: now,
+    status:             'active',
+    timestamp:          now,
   }));
 
-  const { error } = await supabase
-    .from('snapshots')
-    .upsert(rows, { onConflict: 'meli_item_id' });
+  const { error } = await supabase.from('snapshots').insert(rows);
   if (error) throw new Error(`saveSnapshot: ${error.message}`);
   return { count: rows.length, timestamp: now };
 }
@@ -135,63 +125,61 @@ async function saveSnapshot(sellerId, items) {
 
 async function processSeller(seller) {
   const sellerId = seller.seller_id;
-  const name = seller.nombre_real ?? seller.nickname ?? sellerId;
-  const url = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
+  const name     = seller.nombre_real ?? seller.nickname ?? String(sellerId);
+  const url      = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
 
   console.log(`\n${'─'.repeat(60)}`);
   console.log(`Seller: ${sellerId} — ${name}`);
-  console.log(`URL: ${url}`);
 
-  console.log('  Scraping...');
   const { status, html } = await scrape(url);
-  console.log(`  HTTP status: ${status}  |  HTML: ${html.length.toLocaleString()} chars`);
+  console.log(`  HTTP ${status} | ${html.length.toLocaleString()} chars`);
 
   const items = extractItems(html);
   console.log(`  Items extraídos: ${items.length}`);
 
   if (items.length === 0) {
-    console.warn('  ⚠ No se extrajeron items — se omite guardado.');
-    return;
+    console.warn('  WARN: 0 items extraídos — snapshot omitido');
+    return { sellerId, name, count: 0, ok: false };
   }
 
-  console.log('  Muestra (primeros 3):');
-  items.slice(0, 3).forEach((i) =>
-    console.log(`    [${i.id}] ${i.title ?? '(sin título)'} — ${i.currency} ${i.price}`)
+  items.slice(0, 3).forEach(i =>
+    console.log(`    [${i.id}] ${(i.title ?? '').substring(0,50)} — ${i.currency} ${i.price}`)
   );
 
   const saved = await saveSnapshot(sellerId, items);
-  console.log(`  ✅ Snapshot guardado: ${saved.count} items @ ${saved.timestamp}`);
+  console.log(`  OK: ${saved.count} items guardados @ ${saved.timestamp}`);
+  return { sellerId, name, count: saved.count, ok: true };
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('MLU Monitor — inicio');
+  console.log('=== MLU Monitor inicio ===');
   console.log(new Date().toISOString());
 
   let sellers;
   try {
     sellers = await getActiveSellers();
-    console.log(`\nSellers activos en BD: ${sellers.length}`);
+    console.log(`Sellers activos: ${sellers.length}`);
   } catch (err) {
-    console.warn(`No se pudo leer tabla sellers: ${err.message}`);
-    sellers = [];
+    console.warn(`WARN getSellers: ${err.message} — usando fallback`);
+    sellers = [{ seller_id: 42794274, nickname: 'TIOPACO', activo: true }];
   }
 
-  if (!sellers || sellers.length === 0) {
-    console.log('Usando seller de prueba: 42794274');
-    sellers = [{ seller_id: 42794274, nickname: 'Test seller', activo: true }];
-  }
-
+  const results = [];
   for (const seller of sellers) {
     try {
-      await processSeller(seller);
+      const r = await processSeller(seller);
+      results.push(r);
     } catch (err) {
-      console.error(`  ❌ Error procesando seller ${seller.seller_id}: ${err.message}`);
+      console.error(`  ERROR seller ${seller.seller_id}: ${err.message}`);
+      results.push({ sellerId: seller.seller_id, name: seller.nickname, count: 0, ok: false });
     }
   }
 
-  console.log('\nMLU Monitor — fin');
+  const ok  = results.filter(r => r.ok).length;
+  const bad = results.filter(r => !r.ok).length;
+  console.log(`\n=== Monitor fin: ${ok} OK / ${bad} con problemas ===`);
 }
 
-main().catch(console.error);
+main().catch(err => { console.error('FATAL:', err.message); process.exit(1); });

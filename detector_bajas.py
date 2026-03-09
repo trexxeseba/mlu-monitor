@@ -1,267 +1,248 @@
-#!/usr/bin/env python3
 """
-Detector de Bajas - Detecta cambios en publicaciones entre snapshots
-Genera: bajas_detectadas.csv, reaparecidos.csv, reporte.html, resumen.txt
+detector_bajas.py
+Compara penúltimo snapshot vs último snapshot por seller.
+- baja_detectada  = item en penúltimo que NO está en último
+- reaparecio      = item que faltó antes y volvió al último
+Salida: output/bajas_detectadas.csv, output/reaparecidos.csv,
+        output/reporte.html, output/resumen.txt
 """
 
-import csv
-import os
-import sys
-from datetime import datetime
-from pathlib import Path
+import os, sys, json, csv
+from datetime import datetime, timezone
+from collections import defaultdict
 
-# Directorios
-OUTPUT_DIR = "output"
-SNAPSHOT_ANTERIOR = f"{OUTPUT_DIR}/snapshot_anterior.csv"
-SNAPSHOT_ACTUAL = f"{OUTPUT_DIR}/snapshot_actual.csv"
-BAJAS_DETECTADAS = f"{OUTPUT_DIR}/bajas_detectadas.csv"
-REAPARICIONES = f"{OUTPUT_DIR}/reapariciones.csv"
-REPORTE_HTML = f"{OUTPUT_DIR}/reporte.html"
-RESUMEN_TXT = f"{OUTPUT_DIR}/resumen.txt"
+# ─── Supabase REST helper ──────────────────────────────────────────────────────
 
-# Columnas
-SNAPSHOT_COLS = ["seller_id", "meli_item_id", "title", "price", "status", "timestamp"]
-BAJAS_COLS = ["detected_at", "seller_id", "meli_item_id", "title_last_seen", "price_last_seen", "event_type", "note"]
-REAPARICIONES_COLS = ["detected_at", "seller_id", "meli_item_id", "title", "price", "event_type", "note"]
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').rstrip('/')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
 
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print('FATAL: faltan SUPABASE_URL / SUPABASE_KEY')
+    sys.exit(1)
 
-def crear_output_dir():
-    """Crea directorio output si no existe"""
-    Path(OUTPUT_DIR).mkdir(exist_ok=True)
+try:
+    import urllib.request
+except ImportError:
+    pass
 
+def supabase_get(table, params=''):
+    url = f'{SUPABASE_URL}/rest/v1/{table}?{params}'
+    req = urllib.request.Request(url, headers={
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+    })
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read().decode())
 
-def cargar_csv(ruta):
-    """Carga CSV y retorna dict {meli_item_id: row}"""
-    if not os.path.exists(ruta):
+# ─── Cargar snapshots ──────────────────────────────────────────────────────────
+
+def load_snapshots():
+    print('Cargando snapshots desde Supabase...')
+    try:
+        rows = supabase_get('snapshots', 'select=seller_id,meli_item_id,title,price,timestamp&order=timestamp.asc')
+    except Exception as e:
+        print(f'ERROR cargando snapshots: {e}')
         return {}
-    
-    items = {}
-    try:
-        with open(ruta, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row and row.get('meli_item_id'):
-                    items[row['meli_item_id']] = row
-    except Exception as e:
-        print(f"⚠️  Error leyendo {ruta}: {e}")
-    
-    return items
 
+    print(f'  Rows recibidas: {len(rows)}')
 
-def guardar_csv(ruta, datos, columnas):
-    """Guarda datos a CSV (append si existe, crear si no)"""
-    existe = os.path.exists(ruta)
-    
-    try:
-        with open(ruta, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=columnas)
-            if not existe:
-                writer.writeheader()
-            for row in datos:
-                writer.writerow(row)
-    except Exception as e:
-        print(f"❌ Error guardando {ruta}: {e}")
-        raise
+    # Agrupar por seller → lista de snapshots (cada snapshot = timestamp + set de items)
+    # Estructura: { seller_id: { timestamp: { item_id: {title, price} } } }
+    by_seller = defaultdict(lambda: defaultdict(dict))
+    for row in rows:
+        sid = str(row['seller_id'])
+        ts  = row['timestamp']
+        iid = row['meli_item_id']
+        by_seller[sid][ts][iid] = {
+            'title': row.get('title') or '(sin título)',
+            'price': row.get('price'),
+        }
 
+    return by_seller
 
-def detectar_bajas():
-    """Compara snapshots y registra bajas"""
-    
-    print("\n🔍 Comparando snapshots...")
-    
-    anterior = cargar_csv(SNAPSHOT_ANTERIOR)
-    actual = cargar_csv(SNAPSHOT_ACTUAL)
-    
-    print(f"  Anterior: {len(anterior)} items")
-    print(f"  Actual: {len(actual)} items")
-    
-    bajas = []
-    reapariciones = []
-    
-    ahora = datetime.now().isoformat()
-    
-    # Detectar bajas (estaban antes, ahora no)
-    for item_id, row_anterior in anterior.items():
-        if item_id not in actual:
-            baja = {
-                "detected_at": ahora,
-                "seller_id": row_anterior.get('seller_id', ''),
-                "meli_item_id": item_id,
-                "title_last_seen": row_anterior.get('title', ''),
-                "price_last_seen": row_anterior.get('price', ''),
-                "event_type": "baja_detectada",
-                "note": ""
-            }
-            bajas.append(baja)
-            print(f"  ⬇️  BAJA: {item_id} - {row_anterior.get('title')} (${row_anterior.get('price')})")
-    
-    # Detectar reapariciones (estaban en bajas, ahora reaparecen)
-    if os.path.exists(BAJAS_DETECTADAS):
-        bajas_hist = cargar_csv(BAJAS_DETECTADAS)
-        for item_id, row_actual in actual.items():
-            if item_id in bajas_hist:
-                reaparicion = {
-                    "detected_at": ahora,
-                    "seller_id": row_actual.get('seller_id', ''),
-                    "meli_item_id": item_id,
-                    "title": row_actual.get('title', ''),
-                    "price": row_actual.get('price', ''),
-                    "event_type": "reaparecio",
-                    "note": ""
-                }
-                reapariciones.append(reaparicion)
-                print(f"  ⬆️  REAPARICIÓN: {item_id} - {row_actual.get('title')}")
-    
-    # Guardar resultados
-    if bajas:
-        guardar_csv(BAJAS_DETECTADAS, bajas, BAJAS_COLS)
-        print(f"\n✓ Registradas {len(bajas)} baja(s) en {BAJAS_DETECTADAS}")
-    
-    if reapariciones:
-        guardar_csv(REAPARICIONES, reapariciones, REAPARICIONES_COLS)
-        print(f"✓ Registradas {len(reapariciones)} reaparición(es) en {REAPARICIONES}")
-    
-    if not bajas and not reapariciones:
-        print("\n✓ Sin cambios")
-    
-    return bajas, reapariciones, anterior, actual
+# ─── Comparar penúltimo vs último ─────────────────────────────────────────────
 
+def detect(by_seller):
+    bajas       = []  # items que desaparecieron
+    reaparecidos = []  # items que volvieron
 
-def rotar_snapshots():
-    """Renombra snapshot_actual → snapshot_anterior para próximo chequeo"""
-    print("\n🔄 Rotando snapshots para próximo chequeo...")
-    
-    if os.path.exists(SNAPSHOT_ACTUAL):
-        try:
-            os.replace(SNAPSHOT_ACTUAL, SNAPSHOT_ANTERIOR)
-            print(f"  ✓ {SNAPSHOT_ACTUAL} → {SNAPSHOT_ANTERIOR}")
-        except Exception as e:
-            print(f"  ❌ Error rotando: {e}")
-            raise
-    else:
-        print(f"  ⚠️  {SNAPSHOT_ACTUAL} no existe (primer chequeo?)")
+    now = datetime.now(timezone.utc).isoformat()
 
+    for sid, snapshots in by_seller.items():
+        sorted_ts = sorted(snapshots.keys())
 
-def generar_reporte_html(bajas, reapariciones):
-    """Genera reporte HTML"""
-    print(f"\n📄 Generando {REPORTE_HTML}...")
-    
-    ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
-    
-    filas_bajas = "".join([
-        f"<tr><td>{b['detected_at']}</td><td>{b['seller_id']}</td><td>{b['meli_item_id']}</td>"
-        f"<td>{b['title_last_seen']}</td><td>${b['price_last_seen']}</td></tr>"
-        for b in bajas
-    ])
-    
-    filas_reapariciones = "".join([
-        f"<tr><td>{r['detected_at']}</td><td>{r['seller_id']}</td><td>{r['meli_item_id']}</td>"
-        f"<td>{r['title']}</td><td>${r['price']}</td></tr>"
-        for r in reapariciones
-    ])
-    
+        if len(sorted_ts) < 2:
+            print(f'  Seller {sid}: solo {len(sorted_ts)} snapshot(s) — necesita al menos 2 para comparar')
+            continue
+
+        ts_prev = sorted_ts[-2]
+        ts_curr = sorted_ts[-1]
+        prev    = snapshots[ts_prev]  # { item_id: {title, price} }
+        curr    = snapshots[ts_curr]  # { item_id: {title, price} }
+
+        print(f'  Seller {sid}: comparando {ts_prev[:19]} → {ts_curr[:19]}')
+        print(f'    Prev: {len(prev)} items | Curr: {len(curr)} items')
+
+        # Bajas: estaban en prev, no están en curr
+        for iid, meta in prev.items():
+            if iid not in curr:
+                bajas.append({
+                    'detected_at':    now,
+                    'seller_id':      sid,
+                    'item_id':        iid,
+                    'title_last_seen': meta['title'],
+                    'price_last_seen': meta['price'],
+                    'event_type':     'baja_detectada',
+                })
+
+        # Reaparecidos: no estaban en prev, sí están en curr
+        # (para ser reaparición real, tiene que haber estado en algún snapshot anterior)
+        all_ts     = sorted_ts[:-1]  # todos menos el último
+        ever_seen  = set()
+        for ts in all_ts:
+            ever_seen.update(snapshots[ts].keys())
+
+        for iid, meta in curr.items():
+            if iid not in snapshots[ts_prev] and iid in ever_seen:
+                reaparecidos.append({
+                    'detected_at': now,
+                    'seller_id':   sid,
+                    'item_id':     iid,
+                    'title':       meta['title'],
+                    'price':       meta['price'],
+                    'event_type':  'reaparecio',
+                })
+
+        nuevos = len([i for i in curr if i not in ever_seen and i not in prev])
+        if nuevos:
+            print(f'    Nuevos (nunca vistos): {nuevos} — no se reportan como reaparecidos')
+
+    return bajas, reaparecidos
+
+# ─── Escribir outputs ─────────────────────────────────────────────────────────
+
+def write_csv(path, rows, fieldnames):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(rows)
+    print(f'  Escrito: {path} ({len(rows)} filas)')
+
+def write_resumen(path, by_seller, bajas, reaparecidos, monitor_ok):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+    total_items = sum(
+        len(items)
+        for snapshots in by_seller.values()
+        for ts, items in snapshots.items()
+        if ts == sorted(snapshots.keys())[-1]
+    )
+    lines = [
+        f'MLU Monitor — Resumen de ejecución',
+        f'Fecha/hora: {now}',
+        f'',
+        f'Sellers procesados: {len(by_seller)}',
+        f'Total items actuales (último snapshot): {total_items}',
+        f'Bajas nuevas detectadas: {len(bajas)}',
+        f'Reaparecidos: {len(reaparecidos)}',
+        f'',
+        f'Estado monitor.js: {"OK" if monitor_ok else "ERROR — ver log del run"}',
+        f'Estado detector_bajas.py: OK',
+    ]
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+    print(f'  Escrito: {path}')
+
+def write_html(path, bajas, reaparecidos):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+
+    def table(rows, cols, keys):
+        if not rows:
+            return '<p>Sin registros en este run.</p>'
+        th = ''.join(f'<th>{c}</th>' for c in cols)
+        trs = ''
+        for r in rows:
+            trs += '<tr>' + ''.join(f'<td>{r.get(k,"")}</td>' for k in keys) + '</tr>'
+        return f'<table border="1" cellpadding="6" cellspacing="0">\n<tr>{th}</tr>\n{trs}\n</table>'
+
+    bajas_html = table(
+        bajas,
+        ['Fecha detección','Seller ID','Item ID','Título','Precio','Evento'],
+        ['detected_at','seller_id','item_id','title_last_seen','price_last_seen','event_type'],
+    )
+    reap_html = table(
+        reaparecidos,
+        ['Fecha detección','Seller ID','Item ID','Título','Precio','Evento'],
+        ['detected_at','seller_id','item_id','title','price','event_type'],
+    )
+
     html = f"""<!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLU Monitor - Bajas Detectadas</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
-        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
-        h1 {{ color: #333; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }}
-        h2 {{ color: #555; margin-top: 30px; }}
-        table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-        th {{ background: #0066cc; color: white; padding: 12px; text-align: left; }}
-        td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
-        tr:hover {{ background: #f9f9f9; }}
-        .summary {{ background: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }}
-        .stat {{ display: inline-block; margin-right: 30px; font-weight: bold; }}
-        .stat-num {{ color: #0066cc; font-size: 24px; }}
-        .alert {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; }}
-        .empty {{ color: #999; text-align: center; padding: 20px; }}
-    </style>
+<head><meta charset="UTF-8">
+<title>MLU Monitor — {now}</title>
+<style>
+  body {{ font-family: sans-serif; margin: 20px; }}
+  h1   {{ color: #333; }}
+  h2   {{ margin-top: 30px; }}
+  table {{ border-collapse: collapse; width: 100%; }}
+  th   {{ background: #444; color: #fff; padding: 8px; text-align: left; }}
+  td   {{ padding: 6px; }}
+  tr:nth-child(even) {{ background: #f4f4f4; }}
+  .badge {{ display:inline-block; padding:3px 8px; border-radius:4px; font-size:0.85em; }}
+  .baja {{ background:#fdd; color:#900; }}
+  .reap {{ background:#dfd; color:#060; }}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎯 MLU Monitor - Detector de Bajas</h1>
-        <p>Generado: <strong>{ahora}</strong></p>
-        
-        <div class="summary">
-            <div class="stat">Bajas Detectadas: <span class="stat-num">{len(bajas)}</span></div>
-            <div class="stat">Reapariciones: <span class="stat-num">{len(reapariciones)}</span></div>
-        </div>
-        
-        <h2>⬇️ Bajas Detectadas</h2>
-        {f'<table><tr><th>Fecha</th><th>Seller ID</th><th>Item ID</th><th>Título</th><th>Precio</th></tr>{filas_bajas}</table>' if bajas else '<div class="empty">Sin bajas detectadas</div>'}
-        
-        <h2>⬆️ Reapariciones</h2>
-        {f'<table><tr><th>Fecha</th><th>Seller ID</th><th>Item ID</th><th>Título</th><th>Precio</th></tr>{filas_reapariciones}</table>' if reapariciones else '<div class="empty">Sin reapariciones</div>'}
-    </div>
+<h1>MLU Monitor</h1>
+<p>Generado: <strong>{now}</strong></p>
+<p>
+  <span class="badge baja">Bajas detectadas: {len(bajas)}</span>
+  &nbsp;
+  <span class="badge reap">Reaparecidos: {len(reaparecidos)}</span>
+</p>
+
+<h2>🔴 Bajas detectadas ({len(bajas)})</h2>
+{bajas_html}
+
+<h2>🟢 Reaparecidos ({len(reaparecidos)})</h2>
+{reap_html}
 </body>
 </html>"""
-    
-    with open(REPORTE_HTML, 'w', encoding='utf-8') as f:
+
+    with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
-    
-    print(f"  ✓ {REPORTE_HTML} generado")
+    print(f'  Escrito: {path}')
 
-
-def generar_resumen_txt(bajas, reapariciones):
-    """Genera resumen en texto"""
-    print(f"\n📝 Generando {RESUMEN_TXT}...")
-    
-    ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
-    
-    resumen = f"""MLU Monitor - Resumen de Ejecución
-Generado: {ahora}
-
-=== ESTADÍSTICAS ===
-Bajas detectadas: {len(bajas)}
-Reapariciones: {len(reapariciones)}
-
-"""
-    
-    if bajas:
-        resumen += "=== BAJAS DETECTADAS ===\n"
-        for b in bajas:
-            resumen += f"  • {b['meli_item_id']} - {b['title_last_seen']} (${b['price_last_seen']})\n"
-        resumen += "\n"
-    
-    if reapariciones:
-        resumen += "=== REAPARICIONES ===\n"
-        for r in reapariciones:
-            resumen += f"  • {r['meli_item_id']} - {r['title']} (${r['price']})\n"
-        resumen += "\n"
-    
-    resumen += "Próximo chequeo: dentro de 2 horas\n"
-    
-    with open(RESUMEN_TXT, 'w', encoding='utf-8') as f:
-        f.write(resumen)
-    
-    print(f"  ✓ {RESUMEN_TXT} generado")
-
+# ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
-    print("🎯 Detector de Bajas - MLU Monitor")
-    print("=" * 80)
-    
-    crear_output_dir()
-    
-    # Detectar cambios
-    bajas, reapariciones, anterior, actual = detectar_bajas()
-    
-    # Rotar para próximo chequeo
-    rotar_snapshots()
-    
-    # Generar reportes
-    generar_reporte_html(bajas, reapariciones)
-    generar_resumen_txt(bajas, reapariciones)
-    
-    print("\n" + "=" * 80)
-    print(f"✅ Chequeo completado | Bajas: {len(bajas)} | Reapariciones: {len(reapariciones)}")
-    print(f"📁 Resultados en: {OUTPUT_DIR}/")
+    print('=== Detector Bajas inicio ===')
+    print(datetime.now(timezone.utc).isoformat())
 
+    monitor_ok = os.path.exists('output/.monitor_ok')
 
-if __name__ == "__main__":
-    main()
+    by_seller = load_snapshots()
+
+    if not by_seller:
+        print('WARN: no hay datos en snapshots — generando outputs vacíos')
+        bajas, reaparecidos = [], []
+    else:
+        print(f'\nComparando snapshots por seller:')
+        bajas, reaparecidos = detect(by_seller)
+
+    print(f'\nResultados: {len(bajas)} bajas | {len(reaparecidos)} reaparecidos')
+
+    print('\nEscribiendo output/:')
+    write_csv('output/bajas_detectadas.csv', bajas,
+              ['detected_at','seller_id','item_id','title_last_seen','price_last_seen','event_type'])
+    write_csv('output/reaparecidos.csv', reaparecidos,
+              ['detected_at','seller_id','item_id','title','price','event_type'])
+    write_resumen('output/resumen.txt', by_seller, bajas, reaparecidos, monitor_ok)
+    write_html('output/reporte.html', bajas, reaparecidos)
+
+    print('\n=== Detector Bajas fin ===')
+
+main()

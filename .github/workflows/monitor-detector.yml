@@ -2,63 +2,97 @@ name: MLU Monitor + Detector Bajas (every 2h)
 
 on:
   schedule:
-    # Corre cada 2 horas (UTC)
     - cron: '0 */2 * * *'
-  workflow_dispatch: # También permite ejecutar manualmente
+  workflow_dispatch:
 
 jobs:
   monitor_and_detect:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: master
-      
+
+      # ── Verificar secrets críticos ──────────────────────────────────────────
+      - name: Verificar secrets
+        run: |
+          MISSING=""
+          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING="$MISSING SUPABASE_URL"
+          [ -z "${{ secrets.SUPABASE_KEY }}" ] && MISSING="$MISSING SUPABASE_KEY"
+          [ -z "${{ secrets.BD_API_KEY }}"   ] && MISSING="$MISSING BD_API_KEY"
+          [ -z "${{ secrets.BD_ZONE }}"      ] && MISSING="$MISSING BD_ZONE"
+          if [ -n "$MISSING" ]; then
+            echo "FATAL: secrets faltantes:$MISSING"
+            exit 1
+          fi
+          echo "Secrets OK"
+
+      # ── Node / monitor.js ───────────────────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
+      - name: Instalar dependencias npm
+        run: npm install
+
+      - name: Ejecutar monitor.js
+        id: monitor
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          BD_API_KEY:   ${{ secrets.BD_API_KEY }}
+          BD_ZONE:      ${{ secrets.BD_ZONE }}
+        run: |
+          mkdir -p output
+          if node monitor.js; then
+            echo "monitor_status=OK" >> $GITHUB_OUTPUT
+            touch output/.monitor_ok
+          else
+            echo "monitor_status=ERROR" >> $GITHUB_OUTPUT
+            echo "ERROR en monitor.js — ver log arriba"
+          fi
+
+      # ── Python / detector_bajas.py ──────────────────────────────────────────
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
-      - name: Install Node dependencies
-        run: npm install
-      
-      - name: Run monitor.js (Bright Data → Supabase)
+
+      - name: Ejecutar detector_bajas.py
+        id: detector
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          BD_API_KEY: ${{ secrets.BD_API_KEY }}
-          BD_ZONE: ${{ secrets.BD_ZONE }}
-        run: node monitor.js
-      
-      - name: Run detector_bajas.py (Compare snapshots)
         run: |
-          mkdir -p output
-          python3 detector_bajas.py
-      
-      - name: Upload output artifacts
+          if python3 detector_bajas.py; then
+            echo "detector_status=OK" >> $GITHUB_OUTPUT
+          else
+            echo "detector_status=ERROR" >> $GITHUB_OUTPUT
+            echo "ERROR en detector_bajas.py — ver log arriba"
+          fi
+
+      # ── Subir artifacts ─────────────────────────────────────────────────────
+      - name: Subir output como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: monitor-output
+          name: monitor-output-${{ github.run_number }}
           path: output/
           retention-days: 30
-      
-      - name: Commit results to repo (optional)
+
+      # ── Resumen final ───────────────────────────────────────────────────────
+      - name: Resumen final
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add -A output/ 2>/dev/null || true
-          git commit -m "chore: monitor results $(date -u +'%Y-%m-%d %H:%M:%S UTC')" 2>/dev/null || true
-          git push 2>/dev/null || true
-      
-      - name: Show execution summary
-        run: |
-          echo "✅ Monitor execution completed at $(date -u)"
-          echo "📁 Output files:"
-          ls -lh output/ 2>/dev/null || echo "  (no output files yet)"
+          echo "================================"
+          echo "monitor.js   : ${{ steps.monitor.outputs.monitor_status }}"
+          echo "detector.py  : ${{ steps.detector.outputs.detector_status }}"
+          echo "================================"
+          echo "Archivos generados:"
+          ls -lh output/ 2>/dev/null || echo "(ninguno)"
+          echo "================================"
+          if [ -f output/resumen.txt ]; then
+            echo ""
+            cat output/resumen.txt
+          fi
