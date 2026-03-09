@@ -1,0 +1,32 @@
+name: Debug Scrape (manual only)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install
+
+      - name: Correr debug_scrape.js
+        env:
+          BD_API_KEY: ${{ secrets.BD_API_KEY }}
+          BD_ZONE:    ${{ secrets.BD_ZONE }}
+        run: node debug_scrape.js
+
+      - name: Subir HTML raw como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-html
+          path: output/debug_raw.html
+          retention-days: 3
