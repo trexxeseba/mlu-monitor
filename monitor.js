@@ -10,6 +10,11 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 const BD_API_KEY = process.env.BD_API_KEY;
 const BD_ZONE    = process.env.BD_ZONE;
 
+// UN solo timestamp para todo el run — todas las filas lo comparten
+const RUN_TIMESTAMP = new Date().toISOString();
+
+console.log(`RUN_TIMESTAMP: ${RUN_TIMESTAMP}`);
+
 // ─── Bright Data ──────────────────────────────────────────────────────────────
 
 function scrape(url) {
@@ -42,10 +47,10 @@ function extractBalancedJson(str, start) {
   let depth = 0, inString = false, escape = false;
   for (let i = start; i < str.length; i++) {
     const ch = str[i];
-    if (escape)              { escape = false; continue; }
-    if (ch === '\\' && inString) { escape = true; continue; }
-    if (ch === '"')          { inString = !inString; continue; }
-    if (inString)            continue;
+    if (escape)                  { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true;  continue; }
+    if (ch === '"')              { inString = !inString; continue; }
+    if (inString) continue;
     if (ch === '{') depth++;
     else if (ch === '}') { depth--; if (depth === 0) return str.substring(start, i + 1); }
   }
@@ -101,9 +106,8 @@ async function getActiveSellers() {
   return data;
 }
 
-// INSERT siempre — nunca upsert, para preservar historial de snapshots
 async function saveSnapshot(sellerId, items) {
-  const now = new Date().toISOString();
+  // Todas las filas de este run comparten RUN_TIMESTAMP — eso define un snapshot
   const rows = items.map(item => ({
     seller_id:          String(sellerId),
     meli_item_id:       item.id,
@@ -113,12 +117,12 @@ async function saveSnapshot(sellerId, items) {
     sold_quantity:      0,
     available_quantity: 0,
     status:             'active',
-    timestamp:          now,
+    timestamp:          RUN_TIMESTAMP,   // ← mismo para todas las filas del run
   }));
 
   const { error } = await supabase.from('snapshots').insert(rows);
   if (error) throw new Error(`saveSnapshot: ${error.message}`);
-  return { count: rows.length, timestamp: now };
+  return rows.length;
 }
 
 // ─── Procesar seller ──────────────────────────────────────────────────────────
@@ -138,17 +142,17 @@ async function processSeller(seller) {
   console.log(`  Items extraídos: ${items.length}`);
 
   if (items.length === 0) {
-    console.warn('  WARN: 0 items extraídos — snapshot omitido');
-    return { sellerId, name, count: 0, ok: false };
+    console.warn(`  WARN: 0 items — snapshot OMITIDO para seller ${sellerId}`);
+    return { sellerId, name, count: 0, ok: false, reason: '0_items' };
   }
 
   items.slice(0, 3).forEach(i =>
     console.log(`    [${i.id}] ${(i.title ?? '').substring(0,50)} — ${i.currency} ${i.price}`)
   );
 
-  const saved = await saveSnapshot(sellerId, items);
-  console.log(`  OK: ${saved.count} items guardados @ ${saved.timestamp}`);
-  return { sellerId, name, count: saved.count, ok: true };
+  const count = await saveSnapshot(sellerId, items);
+  console.log(`  OK: ${count} items guardados @ ${RUN_TIMESTAMP}`);
+  return { sellerId, name, count, ok: true };
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -173,13 +177,32 @@ async function main() {
       results.push(r);
     } catch (err) {
       console.error(`  ERROR seller ${seller.seller_id}: ${err.message}`);
-      results.push({ sellerId: seller.seller_id, name: seller.nickname, count: 0, ok: false });
+      results.push({
+        sellerId: seller.seller_id,
+        name: seller.nombre_real ?? seller.nickname ?? String(seller.seller_id),
+        count: 0,
+        ok: false,
+        reason: err.message,
+      });
     }
   }
 
+  // Escribir lista de sellers OK para que detector_bajas.py la consuma
+  const fs = require('fs');
+  fs.mkdirSync('output', { recursive: true });
+  fs.writeFileSync('output/.run_meta.json', JSON.stringify({
+    run_timestamp: RUN_TIMESTAMP,
+    sellers: results,
+  }));
+
   const ok  = results.filter(r => r.ok).length;
   const bad = results.filter(r => !r.ok).length;
-  console.log(`\n=== Monitor fin: ${ok} OK / ${bad} con problemas ===`);
+  console.log(`\n=== Monitor fin: ${ok} OK / ${bad} fallidos ===`);
+  if (bad > 0) {
+    results.filter(r => !r.ok).forEach(r =>
+      console.log(`  SKIP: seller ${r.sellerId} (${r.reason ?? 'error'})`)
+    );
+  }
 }
 
 main().catch(err => { console.error('FATAL:', err.message); process.exit(1); });
