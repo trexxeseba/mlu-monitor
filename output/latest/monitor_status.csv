@@ -1,16 +1,16 @@
 seller_id,run_id,status,error_message,items_found
-42794274,run_1773094541958,failed,"0_items_extraidos",0
-82819150,run_1773094541958,failed,"0_items_extraidos",0
-191098554,run_1773094541958,failed,"0_items_extraidos",0
-440298103,run_1773094541958,failed,"0_items_extraidos",0
-65472902,run_1773094541958,failed,"0_items_extraidos",0
-278811319,run_1773094541958,failed,"0_items_extraidos",0
-165896717,run_1773094541958,failed,"0_items_extraidos",0
-792978463,run_1773094541958,failed,"0_items_extraidos",0
-65437681,run_1773094541958,failed,"0_items_extraidos",0
-224996484,run_1773094541958,failed,"0_items_extraidos",0
-30727726,run_1773094541958,failed,"0_items_extraidos",0
-6470403,run_1773094541958,failed,"0_items_extraidos",0
-101941840,run_1773094541958,failed,"0_items_extraidos",0
-74533587,run_1773094541958,failed,"0_items_extraidos",0
-81598742,run_1773094541958,failed,"0_items_extraidos",0
+42794274,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+82819150,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+191098554,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+440298103,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+65472902,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+278811319,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+165896717,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+792978463,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+65437681,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+224996484,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+30727726,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+6470403,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+101941840,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+74533587,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0
+81598742,run_1773100403056,failed,"Scrapfly: no encontre cierre de content",0

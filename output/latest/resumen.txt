@@ -1,6 +1,6 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-09 22:15 UTC
-Run ID:      run_1773094541958
+Fecha/hora:  2026-03-09 23:54 UTC
+Run ID:      run_1773100403056
 
 Sellers procesados OK:          0
 Sellers fallidos (excluidos):   15
@@ -11,21 +11,21 @@ Bajas nuevas detectadas:        0
 Reaparecidos:                   0
 
 SELLERS FALLIDOS — excluidos de detección de bajas:
-  SKIP  seller 42794274  motivo: 0_items_extraidos
-  SKIP  seller 82819150  motivo: 0_items_extraidos
-  SKIP  seller 191098554  motivo: 0_items_extraidos
-  SKIP  seller 440298103  motivo: 0_items_extraidos
-  SKIP  seller 65472902  motivo: 0_items_extraidos
-  SKIP  seller 278811319  motivo: 0_items_extraidos
-  SKIP  seller 165896717  motivo: 0_items_extraidos
-  SKIP  seller 792978463  motivo: 0_items_extraidos
-  SKIP  seller 65437681  motivo: 0_items_extraidos
-  SKIP  seller 224996484  motivo: 0_items_extraidos
-  SKIP  seller 30727726  motivo: 0_items_extraidos
-  SKIP  seller 6470403  motivo: 0_items_extraidos
-  SKIP  seller 101941840  motivo: 0_items_extraidos
-  SKIP  seller 74533587  motivo: 0_items_extraidos
-  SKIP  seller 81598742  motivo: 0_items_extraidos
+  SKIP  seller 42794274  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 82819150  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 191098554  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 440298103  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 65472902  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 278811319  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 165896717  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 792978463  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 65437681  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 224996484  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 30727726  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 6470403  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 101941840  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 74533587  motivo: Scrapfly: no encontre cierre de content
+  SKIP  seller 81598742  motivo: Scrapfly: no encontre cierre de content
 
 Estado monitor.js:        OK (monitor_status.csv presente)
 Estado detector_bajas.py: OK
