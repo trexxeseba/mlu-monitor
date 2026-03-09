@@ -1,8 +1,9 @@
-name: MLU Monitor + Detector Bajas (every 2h)
+name: MLU Monitor + Detector Bajas (2x dia)
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 9 * * *'   # 09:00 UTC = 06:00 Uruguay
+    - cron: '0 21 * * *'  # 21:00 UTC = 18:00 Uruguay
   workflow_dispatch:
 
 jobs:
@@ -17,21 +18,18 @@ jobs:
         with:
           ref: master
 
-      # ── Verificar secrets críticos ──────────────────────────────────────────
       - name: Verificar secrets
         run: |
           MISSING=""
           [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING="$MISSING SUPABASE_URL"
           [ -z "${{ secrets.SUPABASE_KEY }}" ] && MISSING="$MISSING SUPABASE_KEY"
-          [ -z "${{ secrets.BD_API_KEY }}"   ] && MISSING="$MISSING BD_API_KEY"
-          [ -z "${{ secrets.BD_ZONE }}"      ] && MISSING="$MISSING BD_ZONE"
+          [ -z "${{ secrets.SCRAPFLY_KEY }}" ] && MISSING="$MISSING SCRAPFLY_KEY"
           if [ -n "$MISSING" ]; then
             echo "FATAL: secrets faltantes:$MISSING"
             exit 1
           fi
           echo "Secrets OK"
 
-      # ── Node / monitor.js ───────────────────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -43,20 +41,17 @@ jobs:
       - name: Ejecutar monitor.js
         id: monitor
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          BD_API_KEY:   ${{ secrets.BD_API_KEY }}
-          BD_ZONE:      ${{ secrets.BD_ZONE }}
+          SUPABASE_URL:  ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:  ${{ secrets.SUPABASE_KEY }}
+          SCRAPFLY_KEY:  ${{ secrets.SCRAPFLY_KEY }}
         run: |
           mkdir -p output
           if node monitor.js; then
             echo "monitor_status=OK" >> $GITHUB_OUTPUT
           else
             echo "monitor_status=ERROR" >> $GITHUB_OUTPUT
-            echo "ERROR en monitor.js — ver log arriba"
           fi
 
-      # ── Python / detector_bajas.py ──────────────────────────────────────────
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -72,29 +67,24 @@ jobs:
             echo "detector_status=OK" >> $GITHUB_OUTPUT
           else
             echo "detector_status=ERROR" >> $GITHUB_OUTPUT
-            echo "ERROR en detector_bajas.py — ver log arriba"
           fi
 
-      # ── Copiar a output/latest/ y commitear ────────────────────────────────
       - name: Publicar output/latest/
         run: |
           mkdir -p output/latest
           for f in resumen.txt bajas_detectadas.csv reaparecidos.csv reporte.html monitor_status.csv; do
             [ -f "output/$f" ] && cp "output/$f" "output/latest/$f"
           done
-
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add output/latest/
           git diff --cached --quiet || git commit -m "chore: update output/latest [skip ci]"
           git push
 
-      # ── Step Summary ───────────────────────────────────────────────────────
-      - name: Publicar Step Summary
+      - name: Step Summary
         if: always()
         run: |
           echo "## MLU Monitor — $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Componente | Estado |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| monitor.js | ${{ steps.monitor.outputs.monitor_status }} |" >> $GITHUB_STEP_SUMMARY
@@ -104,12 +94,9 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             cat output/latest/resumen.txt >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_resumen.txt no generado_" >> $GITHUB_STEP_SUMMARY
           fi
 
-      # ── Artifact como backup técnico ───────────────────────────────────────
-      - name: Subir artifact (backup)
+      - name: Artifact backup
         if: always()
         uses: actions/upload-artifact@v4
         with:
