@@ -32,7 +32,7 @@ function httpGet(hostname, path) {
 // ─── Scrapfly ─────────────────────────────────────────────────────────────────
 async function scrapeSeller(sellerId) {
   const targetUrl = encodeURIComponent(`https://listado.mercadolibre.com.uy/_CustId_${sellerId}`);
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&asp=true&render_js=false&country=uy`;
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&asp=true&render_js=true&rendering_wait=5000&country=uy`;
 
   const res = await httpGet('api.scrapfly.io', path);
   if (res.status !== 200) throw new Error(`Scrapfly HTTP ${res.status}`);
