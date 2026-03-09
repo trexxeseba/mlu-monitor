@@ -1,6 +1,6 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-09 17:30 UTC
-Run ID:      run_1773077411498
+Fecha/hora:  2026-03-09 18:34 UTC
+Run ID:      run_1773081255950
 
 Sellers procesados OK:          0
 Sellers fallidos (excluidos):   15
