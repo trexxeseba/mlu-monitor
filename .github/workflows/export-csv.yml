@@ -1,0 +1,45 @@
+name: Export Supabase to CSV
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 9 * * *'  # Diario a las 9am UTC
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Export Supabase tables to CSV
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: node download-supabase.js
+      
+      - name: Upload CSVs as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: supabase-exports
+          path: |
+            SELLERS.csv
+            SNAPSHOTS.csv
+            RESUMEN.csv
+          retention-days: 30
+      
+      - name: Show files generated
+        run: |
+          echo "✅ CSVs generados:"
+          ls -lh *.csv
