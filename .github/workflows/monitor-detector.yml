@@ -49,7 +49,6 @@ jobs:
           mkdir -p output
           if node monitor.js; then
             echo "monitor_status=OK" >> $GITHUB_OUTPUT
-            touch output/.monitor_ok
           else
             echo "monitor_status=ERROR" >> $GITHUB_OUTPUT
             echo "ERROR en monitor.js — ver log arriba"
@@ -74,25 +73,44 @@ jobs:
             echo "ERROR en detector_bajas.py — ver log arriba"
           fi
 
-      # ── Subir artifacts ─────────────────────────────────────────────────────
-      - name: Subir output como artifact
+      # ── Copiar a output/latest/ y commitear ────────────────────────────────
+      - name: Publicar output/latest/
+        run: |
+          mkdir -p output/latest
+          for f in resumen.txt bajas_detectadas.csv reaparecidos.csv reporte.html monitor_status.csv; do
+            [ -f "output/$f" ] && cp "output/$f" "output/latest/$f"
+          done
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/latest/
+          git diff --cached --quiet || git commit -m "chore: update output/latest [skip ci]"
+          git push
+
+      # ── Step Summary ───────────────────────────────────────────────────────
+      - name: Publicar Step Summary
+        if: always()
+        run: |
+          echo "## MLU Monitor — $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Componente | Estado |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| monitor.js | ${{ steps.monitor.outputs.monitor_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| detector_bajas.py | ${{ steps.detector.outputs.detector_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f output/latest/resumen.txt ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat output/latest/resumen.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_resumen.txt no generado_" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ── Artifact como backup técnico ───────────────────────────────────────
+      - name: Subir artifact (backup)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: monitor-output-${{ github.run_number }}
           path: output/
           retention-days: 30
-
-      # ── Resumen final ───────────────────────────────────────────────────────
-      - name: Resumen final
-        run: |
-          echo "================================"
-          echo "monitor.js   : ${{ steps.monitor.outputs.monitor_status }}"
-          echo "detector.py  : ${{ steps.detector.outputs.detector_status }}"
-          echo "================================"
-          echo "Archivos generados:"
-          ls -lh output/ 2>/dev/null || echo "(ninguno)"
-          echo "================================"
-          if [ -f output/resumen.txt ]; then
-            echo ""
-            cat output/resumen.txt
-          fi
