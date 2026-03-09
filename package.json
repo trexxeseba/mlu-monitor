@@ -1,17 +1,16 @@
 {
   "name": "mlu-monitor",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Export Supabase tables to CSV",
+  "main": "download-supabase.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "export": "node download-supabase.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
-    "google-spreadsheet": "^5.2.0"
+    "@supabase/supabase-js": "^2.98.0"
   }
 }
