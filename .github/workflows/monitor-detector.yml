@@ -1,0 +1,64 @@
+name: MLU Monitor + Detector Bajas (every 2h)
+
+on:
+  schedule:
+    # Corre cada 2 horas (UTC)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # También permite ejecutar manualmente
+
+jobs:
+  monitor_and_detect:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install Node dependencies
+        run: npm install
+      
+      - name: Run monitor.js (Bright Data → Supabase)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          BD_API_KEY: ${{ secrets.BD_API_KEY }}
+          BD_ZONE: ${{ secrets.BD_ZONE }}
+        run: node monitor.js
+      
+      - name: Run detector_bajas.py (Compare snapshots)
+        run: |
+          mkdir -p output
+          python3 detector_bajas.py
+      
+      - name: Upload output artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-output
+          path: output/
+          retention-days: 30
+      
+      - name: Commit results to repo (optional)
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A output/ 2>/dev/null || true
+          git commit -m "chore: monitor results $(date -u +'%Y-%m-%d %H:%M:%S UTC')" 2>/dev/null || true
+          git push 2>/dev/null || true
+      
+      - name: Show execution summary
+        run: |
+          echo "✅ Monitor execution completed at $(date -u)"
+          echo "📁 Output files:"
+          ls -lh output/ 2>/dev/null || echo "  (no output files yet)"
