@@ -138,8 +138,11 @@ async function main() {
     sellers = [{ seller_id: 42794274, nickname: 'TIOPACO', activo: true }];
   }
 
+  // TEST MODE: limitar a 5 sellers para verificar funcionamiento
+  const testSellers = sellers.slice(0, 5);
+  console.log(`TEST MODE: procesando ${testSellers.length} de ${sellers.length} sellers`);
   const statusRows = [];
-  for (const seller of sellers) statusRows.push(await processSeller(seller));
+  for (const seller of testSellers) statusRows.push(await processSeller(seller));
 
   const csv = [
     'seller_id,run_id,status,error_message,items_found',
