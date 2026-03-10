@@ -1,13 +1,12 @@
-name: MLU Monitor + Detector Bajas (2x dia)
+name: MELI Monitor Mejorado (Cada Hora)
 
 on:
   schedule:
-    - cron: '0 9 * * *'   # 09:00 UTC = 06:00 Uruguay
-    - cron: '0 21 * * *'  # 21:00 UTC = 18:00 Uruguay
-  workflow_dispatch:
+    - cron: '0 * * * *'  # Cada hora, en punto
+  workflow_dispatch:    # Manual si es necesario
 
 jobs:
-  monitor_and_detect:
+  monitor_y_detector:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,20 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: master
-
-      - name: Verificar secrets
-        run: |
-          MISSING=""
-          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING="$MISSING SUPABASE_URL"
-          [ -z "${{ secrets.SUPABASE_KEY }}" ] && MISSING="$MISSING SUPABASE_KEY"
-          [ -z "${{ secrets.SCRAPFLY_KEY }}" ] && MISSING="$MISSING SCRAPFLY_KEY"
-          if [ -n "$MISSING" ]; then
-            echo "FATAL: secrets faltantes:$MISSING"
-            exit 1
-          fi
-          echo "Secrets OK"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,21 +26,22 @@ jobs:
       - name: Ejecutar monitor.js
         id: monitor
         env:
-          SUPABASE_URL:  ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:  ${{ secrets.SUPABASE_KEY }}
-          SCRAPFLY_KEY:  ${{ secrets.SCRAPFLY_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SCRAPFLY_KEY: ${{ secrets.SCRAPFLY_KEY }}
         run: |
           mkdir -p output
-          if node monitor.js; then
-            echo "monitor_status=OK" >> $GITHUB_OUTPUT
-          else
-            echo "monitor_status=ERROR" >> $GITHUB_OUTPUT
-          fi
+          node monitor.js 2>&1 | tee output/monitor.log
+          echo "✅ Monitor ejecutado"
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+
+      - name: Instalar dependencias Python
+        run: |
+          pip install supabase --break-system-packages
 
       - name: Ejecutar detector_bajas.py
         id: detector
@@ -63,43 +49,27 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          if python3 detector_bajas.py; then
-            echo "detector_status=OK" >> $GITHUB_OUTPUT
-          else
-            echo "detector_status=ERROR" >> $GITHUB_OUTPUT
-          fi
+          python3 detector_bajas.py 2>&1 | tee output/detector.log
+          echo "✅ Detector ejecutado"
 
-      - name: Publicar output/latest/
+      - name: Commit y push si hay cambios
         run: |
-          mkdir -p output/latest
-          for f in resumen.txt bajas_detectadas.csv reaparecidos.csv reporte.html monitor_status.csv; do
-            [ -f "output/$f" ] && cp "output/$f" "output/latest/$f"
-          done
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/latest/
-          git diff --cached --quiet || git commit -m "chore: update output/latest [skip ci]"
-          git push
+          git add output/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: monitor output [skip ci]" && git push)
 
-      - name: Step Summary
-        if: always()
-        run: |
-          echo "## MLU Monitor — $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "| Componente | Estado |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| monitor.js | ${{ steps.monitor.outputs.monitor_status }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| detector_bajas.py | ${{ steps.detector.outputs.detector_status }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f output/latest/resumen.txt ]; then
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat output/latest/resumen.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Artifact backup
+      - name: Guardar logs como artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: monitor-output-${{ github.run_number }}
+          name: execution-logs-${{ github.run_number }}
           path: output/
           retention-days: 30
+
+      - name: Notificar si hay errores
+        if: failure()
+        run: |
+          echo "❌ ALERTA: El workflow falló"
+          echo "Revisar logs en: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
