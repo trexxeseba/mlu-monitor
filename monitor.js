@@ -59,7 +59,13 @@ async function scrapeSeller(sellerId) {
   if (!scriptMatch) throw new Error('Scrapfly: no encontre _n.ctx.r en HTML');
 
   let ctxData;
-  try { ctxData = JSON.parse(scriptMatch[1]); }
+  try {
+    // Limpiar caracteres problemáticos antes de parsear
+    const jsonStr = scriptMatch[1]
+      .replace(/\x[0-9A-Fa-f]{2}/g, '')   // remover hex escapes mal formados
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); // remover control chars
+    ctxData = JSON.parse(jsonStr);
+  }
   catch (e) { throw new Error(`JSON parse: ${e.message}`); }
 
   const results = ctxData?.appProps?.pageProps?.initialState?.results ?? [];
