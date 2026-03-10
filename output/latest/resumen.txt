@@ -1,21 +1,14 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-10 00:08 UTC
-Run ID:      run_1773101228326
+Fecha/hora:  2026-03-10 00:10 UTC
+Run ID:      run_1773101335075
 
-Sellers procesados OK:          0
-Sellers fallidos (excluidos):   5
+Sellers procesados OK:          5
+Sellers fallidos (excluidos):   0
 Sellers con solo 1 snapshot:    0 (sin comparación aún)
-Total items actuales:           0
+Total items actuales:           240
 
-Bajas nuevas detectadas:        0
+Bajas nuevas detectadas:        10
 Reaparecidos:                   0
-
-SELLERS FALLIDOS — excluidos de detección de bajas:
-  SKIP  seller 42794274  motivo: saveSnapshot: duplicate key value violates unique constraint snapshots_meli_item_id_key""
-  SKIP  seller 82819150  motivo: saveSnapshot: duplicate key value violates unique constraint snapshots_meli_item_id_key""
-  SKIP  seller 191098554  motivo: saveSnapshot: duplicate key value violates unique constraint snapshots_meli_item_id_key""
-  SKIP  seller 440298103  motivo: saveSnapshot: duplicate key value violates unique constraint snapshots_meli_item_id_key""
-  SKIP  seller 65472902  motivo: saveSnapshot: duplicate key value violates unique constraint snapshots_meli_item_id_key""
 
 Estado monitor.js:        OK (monitor_status.csv presente)
 Estado detector_bajas.py: OK

@@ -1,6 +1,6 @@
 seller_id,run_id,status,error_message,items_found
-42794274,run_1773101228326,failed,"saveSnapshot: duplicate key value violates unique constraint "snapshots_meli_item_id_key"",48
-82819150,run_1773101228326,failed,"saveSnapshot: duplicate key value violates unique constraint "snapshots_meli_item_id_key"",48
-191098554,run_1773101228326,failed,"saveSnapshot: duplicate key value violates unique constraint "snapshots_meli_item_id_key"",48
-440298103,run_1773101228326,failed,"saveSnapshot: duplicate key value violates unique constraint "snapshots_meli_item_id_key"",48
-65472902,run_1773101228326,failed,"saveSnapshot: duplicate key value violates unique constraint "snapshots_meli_item_id_key"",48
+42794274,run_1773101335075,ok,"",48
+82819150,run_1773101335075,ok,"",48
+191098554,run_1773101335075,ok,"",48
+440298103,run_1773101335075,ok,"",48
+65472902,run_1773101335075,ok,"",48
