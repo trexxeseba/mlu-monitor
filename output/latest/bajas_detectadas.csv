@@ -1,433 +1,293 @@
 detected_at,seller_id,item_id,title_last_seen,price_last_seen,event_type
-2026-03-10T09:41:24.764295+00:00,65437681,MLU628230403,Juego De Gubias Para Tallar Madera En Acero Al Carbono,1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU609674017,Hoja Sola Para Hacer Cuchillo Criollo. Marca Ñandu De 14 Cm Azul Acero,770,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU624703594,Kangol Gorra Tipo Inglesa De Verano. Talle 57/58 M,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU617132029,Hoja Acero 440 Para Encabar Marca Seigen.  Hoja 20 Cm.botón,1300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU607316194,Estuche Kindle Oasis 9a Y 10a Versión ( Últimos 7pulgadas) Negro,50,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU613258451,Cinto Levis Made In Usa. Nuevo Marrón Liso 105,2900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU478890892,Gubia Para Tallar Madera Marca Mora De Suecia. Hoja De 6 Cm,2700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU848736220,Kangol Boina  En Lana . Talle L 57/59 Cm. Verde Ingles,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU960692078,Kangol Gorra Verano Beige L 57/58,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU445716909,Boina En Cuero Legitimo Color Negra. Todos Los Talles,1750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU636716302,Gorro De Cuero Verdadero Marrón Claro. Talle Úniversal.,1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU479166705,Boina Marrón Chocolate En Paño Lana .talle Universal,450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU659999770,Importante Espada Gladiador En Acero Damasco. 31 Cm Hoja Azul Marino,155,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU630156889,Böker Cuchillo De Gaucho Con Cabo Asta De Ciervo. Hoja De 20 Bordó,420,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU848842664,Cuchillo Acero Damasco Para Capar Marrón,75,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU678190328,Buck 120 Cuchillo De Lujo Cabo Cocobolo 19 Cm Hoja Marrón Oscuro,300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU659128372,Espada Romana Gladius 43 Cm Hoja Y 61 Cm Largo Total . Nueva,110,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU652654677,Navaja Buck 110 Cabo Ebano New Ébano,125,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU638666870,Katana Con Cabo Y Vaina De Madera. Buen Acero Marrón Claro,175,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU601481326,Cuchillo Acero Damasco Kukris Con Funda Cuero 18 Cm Hoja.,120,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU648573492,"Cuchilla Acero Damasco Para Chef, Hoja 20 Cm Largo Total 34 Azul Marino",120,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU777957560,Gorro Ruso (ushanka) 60/ 62 Cm Circunferencia Interior.,130,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU662001436,Cuchillo Acero Damasco Para Capar Con Funda. 20 Cm Totales Azul Acero,75,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU628015184,Katana Acero Carbono C/ Funda.largo Total 1 Mts Con Hoja 73 Bordó,175,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU626331613,Campera Inglesa De Hilo Encerado Color Verde Talle S .,160,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU624760996,Mora- Gubia Para Tallar Madera Punta Roma Para Principiante,2500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU629729240,"Cuchillo Acero Damasco Diseño Exclusivo Original. Hoja 9,5cm Índigo",60,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU611773695,Puukko Cuchillo Finlandés 6 Cm Hoja Y 13 Cm Totales C/ Vaina Índigo,78,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU459605147,"Mora, Cuchilllo Sueco Acero Inoxidable. El Mejor Acero .",99,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU660583544,Karambit Cuchillo Acero Damasco Con Vaina Cuero. Azul Marino,75,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU625214161,Cuchilla Acero Damasco 20 Cm Hoja. Buen Peso Y Equilibrio Turquesa,110,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU623041107,Importante Daga En Acero Damasco/cabo Madera Dura.27 Cm Hoja Turquesa,170,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU778009948,Gorro Original Ruso 56 O 58 Cm Circunferencia Interna.,100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU853050048,Helle Noruego Puñal Verijero Madera,135,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU657688410,Puma Cuchillo Aleman Nuevo 24 Cm Totales Con 13 Cm Hoja. Crema,420,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU615527299,Cuchilla Acero Damasco 20 Cm Hoja Cabo Madera Agua,100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU610716232,Navaja Acero Damasco 8 Cm De Hoja Cabo De Búfalo Negro,50,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU634064133,Cuchillo Acero Damasco 25 Cm Largo Y 14. Cm De Hoja Marrón Oscuro,90,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU604965541,Boina De Hilo Unisex Talle Único . Envío A Todo El País,700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU615502454,Cuchillo Acero Damasco 13 Cm Hoja - Vaina Suela- Muy Robusto Agua,90,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU769871914,Kangol Gorra Paño De Lana Azul Marino 56/57,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU652271345,Gorro Ruso No Militar Ushanka. 58:60 Cm.negro.,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU672534294,Buck 119 Cuchillo Americano.26 Cm Largo Y 14 Cm Hoja. Rosa Claro,150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU444298536,Mora - Hoja Cuchillo Mora . Unicas  Del Famoso Acero Sueco.,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU634557591,Cuchilla Zwilling Pro  Los Mellizos  Alemana. Nueva 20 Cm Blanco,150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU612588148,Gorra Inglesa 8 Bastones,70,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU659753934,Acero Damasco Mod. Karambit Con Vaina De Cuero Chocolate,95,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65437681,MLU659740442,Cuchillo Acero Damasco Nuevo 25 Cm Largo Y 14 Cm Hoja. Chocolate,88,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU646084954,Anillo De Plata 925 Grabado Caballero Ancla  Plateado O18,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU477859073,Letras De Bronce Lote  Bronce,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU758643028,Set De 5 Monedas Usa 1994,1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU617204700,Insignia Suzuki ,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU603895486,Antiguo Rollo De Boletos Rutas Del Sol,1785,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU715060318,Tasa Central Ford Ranger Camioneta,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU685012216,Rueda Antigua De Cosechadora,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU478886107,Centro De Rueda Bmw 56mm,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU656897341,Álbum Con 500 Tarjetas De Antel Antel,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU646585292,Arpón De Pesca Usa,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU699496112,Sargento De Carpintería Antiguo 120cm,1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU742509638,Antigüo Casillero Plástico De Cerveza Pilsen,1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU670090960,Silla Mecedora En Bronce Antigua Miniatura ,2500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU605132678,Arado Antiguo De Campo ,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU717707852,Bastón De Madera Antiguo Con Incrustaciones En Nácar Marrón,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU643904893,Centro De Rueda Peugeot Central,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU467072173,Antiguo Primus De Camping ,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU615189380,Tapón De Nafta Moto Puch Ciclomotor ,450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU454789946,Antiguo Manual De Taller Ford Automoviles Camiones 1955,1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU863189168,Reja De Hierro 125cm X 57cm Marrón,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU824721826,Platos Chip And Dip Para Papas Fritas Y Salsas Blanco,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU602136098,Lenin 24 Pósteres,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU603876256,Rollo De Boletos Rutas Del Sol Virgen S33,1785,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU451279462,Honda Almohadon Grabado,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU637228596,Chumbera 4.5 Funciona  Índigo 114.3 Mm,1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU606568562,Antigua Cámara De Fotos Kodak Star 110,675,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU611759030,Bicicleta Sabrina R20,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU655864848,Taza Suzuki 54mm,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU828690234,Máquina Tragamonedas Antigua De Casino,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU656740776,Antiguo Aparato Médico Collens De Tomar La Presión ,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU737466184,Rueda Chevrolet Spark Llanta Original R13,5000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU693721668,Antiguo Tenedor Y Cuchara De Bronce Holandeses,1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU783694376,Centro De Rueda Nissan Kicks March Sentra,700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU809147504,Centro De Rueda Toyota Hilux,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU639523777,Camara De Fotos Antigua Kodak Amarillo,700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU603633179,Tanque De Ancap Antiguo ,2387,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU935748878,Disco De Arado 40/42cm,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU740822392,Llanta R16 Zx Auto Grand Tiger,4500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU654208447,Alfombra Belga De Gran Tamaño,15000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU950736258,Busto De Artigas En Bronce Macizo Con Base De Mármol Dorado Oscuro,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU478271821,Trompeta Antigua Miniatura ,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU464474812,Antigua Máquina De Fotos Kodak ,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU845016546,Enganché De Camión Silpa,12000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU645637661,Centro De Rueda Nissan Frontier 64mm,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU469666556,Molino De Viento 12 V Aerogenerador Antiguo ,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU638043329,Acordeon Verdulera ,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU646991165,Estanterías Metálicas 84cm X 45cm,300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,191098554,MLU647055124,Bayoneta Daga Antigua ,5800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU801191958,"Gemelos Ingleses,  Art Deco, Bronce Y Esmalte. Sellados Azul",1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU617717817,"Antiguo Cuello De Encaje Ingles Hecho A Mano, Siglo 19, Impe",1550,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU801868128,"Gemelos Ingleses, Sellados.  Art Deco Bronce Y Esmalte Azul",1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU602877524,"6 Botones De Esmalte Cloisonne  Sin Uso , Fondo Turquesa ",1300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU732293912,Cuchillo Artesanal Con Magnífico Cabo De Asta De Ciervo Marrón,3200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU707880616,"Navaja Sevillana, Hoja Grabada Con  La Girarlda De Sevilla Marrón",2600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU459585581,"Antiguo Oleo Sobre Madera, Firmado",1900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU963095752,"Reloj Tressa P/dama, Vintage, Esfera Negra, Funcionando Perf Marrón",1450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU693167932,Talero De Cuero Trenzado A Mano Y Suela Cuero,1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU819733148,"Collar De Cuentas De Marfil, Antiguo, Cierre De Rosca Matgil",3200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU656831597,"Reloj Citizen Cuarzo Rectangular, Dorado Y Correa Original Marrón Oscuro Hialino Crema",1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU697337828,Bombilla Curva De Plata Y Cartela Con Iniciales En Oro Plata,1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU618172255,"Tijerita De Plata 800 , Cincelada Y Sellada Para Bordado ",1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU697006606,"Encendedor Antiguo De Metal De Trinchera, 2° Guerra Mundial",1800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU727174466,Par De Espuelas De Hierro Antiguas C/cadenillas Y Tientos,5200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU646824349,"Reloj Pulsera Para Dama, Art Nouveau Aprox 1820 Num. Romanos Bordeau",2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU603409569,"Espejo De Mano , Carey Y Plata Birmigham  Principios  S.20",2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU654942637,"Reloj De Bolsillo, Plata 800 Sellado Y Num. Doble Numeracion Plata",4000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU654306923,"Set De Cubiertos  Encastrados Asados Cabos De Hueso, Ac Inox",1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU706131018,"Prismáticos Navales, Mark 33, 6x30 Año 1944 Estuche Original",2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU848852446,"Caracola Rosada, Reina Adulta.  Lobatus Giga, Enorme !! Sana",1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU1068949332,"Reloj De Bolsillo, Esfera Blanca, N° Romanos,agujas Dorados Plat",3800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU638939126,"Espejo Veneciano, Original , Antiguo , Guarda De Cristal ...",5500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU713027596,"Jgo Parker, Lapicera Vacumatic Y Lapiz  Azul Veteado Estuche Azul",6000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU960051624,"Cadena P/ Reloj De Bolsillo, Doble Enchapado Impecable Oro",2600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU654137463,Densìmetro  U Hidrómetro Con Escala Estuche Original,1350,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU925906756,Antiguo Mate Isabelino De Porcelana. Galleta Con Asa,2200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU652128435,"2 Monedas De Cobre , 4 Cent. Uruguay",900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU618164865,Top O Sujetador De Atuendo Para Danza Del Vientre,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU707267136,Largavistas De Teatro De Nácar  Con  Estuche   Iris - Paris,4200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU477264464,Joya Collar Masoneria Grado 31,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU615064304,"Antigua Navaja De Metal,  Múltiple Con 10 Elementos Gris",1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU684371990,"6 Posa - Cubiertos Christofle,  Clásicos Sellados, 7,5 Cms.",2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU735329766,"Cruz De Plata Con Marquesitas,  Diseño Art Deco",2400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU751675274,Antig Guardapelo Enchap. Con Piedra Cabuchon Roja Y Perlitas,2500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU653115331,"Antiguo Mate  Isabelino De Porcelana Alemana, Dec. Flores",1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU672014024," Chanchito, Alcancía  De Porcelana Alemana, Impecable Y Sano Crema Y Verde",3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU700447642,Lata - Maletin De Chapa Litografiada De La Antigua Yerba Uma,2600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU641164324,"Colgante Mexicano, Bombe, Bi-faz. Fdo Turquesas Y Malaquita ",1250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU643975871,"Cafetera De Peltre Antiguo, Sellada Volf",1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU653772485,"Antiguo Mate Isabelino Blanco ,de Porcelana, Realces Dorados",2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU737232810,"Relicario O Guardapelo, Motivos Hipicos.  Enchapado",2200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU787541506,"Brújula I Guerra Mundial Espejo P Señales, Lupa Móvil Y Dobl Negro",2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU628911602,"7 Boletos Capicua, Cuctsa Y Raincoop ",1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU680201422,"Perfumero Antiguo  Chritian Dior   Diorissimo , Original ",1100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU726489188,"Lentes De Sol Antiguos, Patillas Flexibles Oro Fix Con Est.",2950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU826346526,"Gran Polvera De Guampa C/ Tapón, Para Carga De  Armas Largas",1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,165896717,MLU1069531622,"Reloj Mountain , Carga Manual, Malla Acero Metal Hialino Plateado",2200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU873308810,Antigua Lamparita De Porcelana Coleccionable (1022) Sin Uso,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU669935118,"Caravanas, Colgantes Con Oro En Porcelana Blanca Para Pintar",200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU874356774,"Exquisito Juego De 12 Servilletas De Lino Bordadas, Sin Uso Blanco Flor Bordada",2400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU873802300,"Perfumero Antiguo Sin Estrenar, Miniatura En Piedra Tallada Verdes Y Grises",25,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU649294660,"Pintura Original Sobre Aluminio De Autor Nacional, Enmarcada",700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU480524494,Despojador De Porcelana Blanca Para Decorar O Para Pintar,300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU444133646,Cajas De Fósforos Con Paisajes Con Aves En Dos Dimensiones 2,120,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU444134061,"Potiche Blanco Decorativo Impecable, Con Su Tapa",300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU704446786,"Librofilm Aguilar Museo De Los Impresionistas, En Sus Cajas",850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU852399376,Mochila Kipling Legítima Única En Uruguay 43cm X 33cm X 20cm,5990,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU819642478,Artículo Francés De Escritorio Antiguo Único: Cachet Crampon,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU911691530,Espectacular Cocina Antigua Tappan A Gas Funcionando,10000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU468450656,"Monedas De Canadá Por Lotes ¡lea, Elija Y Consulte!",400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU455669515,Billete Coleccionable Uruguay Nuevito $ 1000 Pesos Antiguo,200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU711271438,Geeely Xr3 Enganche Para Trailer Y Para Luces Como Nuevo,4000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU801178810,Colección De Figuritas Antigua De Chocolates Aguila 1944 Etc Chocolatines Aguila 1944 Y 1960 Cultura Y Deportes Y Esta Es Mi Patria,300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU655249433,Videocassette Sin Estrenar Para Filmar,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU472539741,Decoración Vintage:  Jarra Cafetera Antigua Pintada A Mano,700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU472539888,Decoración Vintage: Antiguo Tarro De Leche Pintado A Mano,750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU819538182,Baúl Tallado Con Incrustaciones / Caja Con Nácar De La India,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798375422,Fina Cajita Artesanal De Madera Torneada Decorada Con Resina,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU787923328,"Plato Decorativo Único, Pintado A Mano, Técnica: Puntillismo Blanco Mujer Japonesa",500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798362550,Cajita Artesanal Tallada En Piedra Procede De Isla De Pascua,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798388494,Cajita Cilíndrica Chilena De Madera Torneada,150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798427680,Cajita Metálica Chilena Decorativa Tallada A Mano En Cobre,200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU815445624,Platito Decorativo Israelí Para Jabón Lavanda Con Flores,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU815446148,Par De Finísimos Copetineros De Cristal Italiano Tallado Transparente,1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU472007630,Candy Box De Cristal Italiano Crcrystal24%pbo Tallado A Mano Incoloro,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU819629304,"Potiche Canadiense Sellado Con Tallado Precolombino 6,5 X 9",420,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798660286,"Antigua Bandeja Victoriana Siglo 19, Plata Sellada Wm Rogers Plata",50,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU798414682,Abrecartas Espadín Toledano Típico Auténtico Dorado,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU471634131,Óleo Original Finamente Enmarcado 61 X 50 (hay 2 Dif X 8mil),4000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU788029936,"Maletín De Cuero Genuino, Muy Antiguo (1890), Para Caballero Marrón Cuero Genuino",1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU444131782,Plato Pintado A Mano Pieza Única Firmada Del Atelier Barros Negro Plata,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU684690140,Caja De Madera Exclusiva Pintada Y Texturada A Mano,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU472539569,Decoración Vintage: Sartén Grande Pintado A Mano Y Découpage,500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU472015254,2 Pares De Guantes De Trabajo Importados Talle G Excelentes,250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU824566722,Antiquísimo Tablero De Ajedrez/damas Importado Y Sus Piezas,600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU787832428,"Juego De Té De Plata Sellada Oriental, Antiguo, Muy Decorado Plateado",52,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU652811955,Antiguo Abanico Negro Con Puntillas De Principios De 1900 Negro Con Paisaje Y Puntillas,800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU788003220,Antiguos Salero Y Pimentero Clásicos Chinos De Marfil Marfil,60,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU788006580,Palillero Porta Escarbadientes Muy Antiguo De Marfil Marítimo Marfil,20,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU873205110,"Antigua Toalla De Tocador (o Mantel) De Hilo, Bordada A Mano",750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU654187773,Curso De Portugués En Videos: Conhecendo O Brasil (9 Videos),400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU652799945,Antiguo Alhajero Joyero Bañado En Plata Con Motivos Florales Plata,50,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU819602580,"Platito De Colección Pintado A Mano, Sellado Oro De Ley Azul Oscuro Sevilla",400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU451744494,London París: Antigua Libreta Con Listado De Prendas A Lavar,450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,65472902,MLU819785638,Antigua Lámpara A Mecha Y Aceite Grey Poupom De Colección,40,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU715614128,Moneda Bitcoin Suvenir Conmemorativa Dorada Excelente Estado,360,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU680695452,Uruguay 5 Centésimos 1901 En Muy Buen Estado Vea Las Fotos.-,900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU692225504,Antigua 10 Centésimos De Plata Año 1893 Muy Bien Vea Fotos,650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU709715262,Uruguay Antigua 1 Centésimo 1869 Ceca H En Muy Buen Estado.,780,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU698699540,Ww2 Alemania Antigua 10 Reichspfennig De Bronce Muy Bien Vea,790,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU1095099460,Paraguay Antigua 4 Centésimos Cobre 1870 En Muy Buen Estado.,360,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU713356960,Nuevo Catálogo De Monedas De Uruguay Con Todos Los Datos.-,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU674532108,Alemania Época De Guerra 1 Reichspfennig En Muy Buen Estado.,380,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU702218882,"1936 Toda La Serie Completa 1, 2, 5y 10 Cents. Las 4 Monedas",395,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU675957340,Lote 2 Monedas De Un Dolar 1 Antigua Y Otra Moderna Muy Bien,395,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU702335258,"1924 Toda La Serie Completa 1, 2y 5 Centésimos Vea Las Fotos",360,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU681564732,Uruguay 1 Centésimo Año 1924 Muy Buen Estado Vea Las Fotos.-,80,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU681595158,Uruguay 1 Centésimo Año 1909 Muy Buen Estado Vea Las Fotos.-,80,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU974587054,Alemania Época De Guerra 10 Reichspfennig En Muy Buen Estado,395,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU645402059,"1909 Serie Completa Las 3 Monedas 1, 2 Y 5 Cts Vea Las Fotos",640,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU718045744,Alemania Epoca De Guerra 1942 Billete 5 Reichsmark Vea Fotos,540,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU947937976,Uruguay 2 Centésimos Año 1941 Moneda De Niquel Buen Estado.-,300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU643250085,Billete No Común Bcu N$2000 Juan Manuel Blanes Excelente Vea,380,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU970196908,Alemania Época De Guerra 5 Reichspfennig En Muy Buen Estado.,390,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU689986864,"Uruguay 1 Antiguo Centésimo Año 1869 Ceca A Muy Buen Estado,",480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU446874382,Pumas De Plata $1. Año 1942 En Buen Estado Vea Las Fotos,750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU688401366,Uruguay N$ 5 Bronce 1825-1975 Conmemorativa Sesquicentenario,150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU445577352,Lote 4 Conmemorativas 2 Sesquicentenario Y 2 Zabala Muy Bien,398,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU718216134,"1953 1959 Toda La Serie Completa 1, 2, 5y 10 Cents 5 Monedas",390,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU461295129,Uruguay 5 Centésim 1944 Sin Circular Unc Con Brillo Original,1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU445042544,1981 Conmemorativa De Plata 900 Salto Grande Muy Buen Estado,2100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU459961985,Uruguay Antigua 2 Centésimos 1869 Ceca A En Muy Buen Estado,650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU608832637,Brou 1939 $ 1000 Variante 10-iv-13 No Común Vea Descripción.,790,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU460817880,Antigua Medalla De Futbol 1o Campeonato Mundial 1930 Uruguay,1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU462482858,Italia Época Fascista 5 Lira De Plata En Excelente Estado,780,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU448289343,Alemania Moneda Antigua 2 Reichspfennig En Muy Buen Estado.,750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU646559031,Estados  Unidos Un Dólar Grande Onza De Cobre 999 Impecable.,680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU948728544,Uruguay 5 Centésimos Año 1941 De Níquel En Muy Buen Estado,250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU461051266,Estados Unidos 2 Monedas De 1 Dolar Una Grande Otra Chica,380,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU461095966,Uruguay 10 Cents. Antigua 1877 De Plata 900 Buen Estado Vea,580,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU464395744,5 Centésimos Año 1941 Variante Vitureira En Excelente Estado,1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU731620366,Nuevo Catálogo De Numismática Uruguay Desde 1831 Hasta 2025,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU701980362,"1901 La Serie Difícil 3 Monedas 1, 2 Y 5 Cents Vea Las Fotos",590,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU947899178,Uruguay 2 Centésimos Año 1936 Moneda De Niquel Buen Estado.-,160,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU703937036,Billete $ 10 Brou 1935 Serie A Rotondaro 9 V 12 Muy Bien,380,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU653889471,Medalla Masónica Estados Unidos Made A Mason Bañada En Oro.-,960,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU706254168,Aparicio Saravia A Caballo En Rivera 5 De Febrero De 1900.-,2300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU732629516,Gran Billete Banco De Londres Y Rio De La Plata $ 50 Excelen,4600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU960199346,Medalla Masónica Logia Número 73 Libre Pensadores Montevideo,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU907487486,Antigua Moneda China Un Cash Bien Conservada Vea Las Fotos,380,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU654176849,Antigua Campeonato Mundial De Futbol 1930 Con Sobre Original,5200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU959480186,Billete No Común 1 Peso 1939 Serie A Rot 10-iii-1 Excelente,250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,42794274,MLU443936921,Medalla De Aparicio Saravia Año 1930 Homenaje Por La Patria.,650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU669099084,Antiguo Cuchillo Criollo Plata Y Oro 30 Cent. De Largo Total Plateado,11500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU702615066,Antiguo Cuchillo De Combate Remington Ejército Uruguayo 1903,5600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU621486174,Antiguo Cuchillo Cabo Plata Franz Wenk Solingen 24 De Hoja.,400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU912864492,Album Figur. Los Trico Y Los Peña - Cacho Y Coquito Completo,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU644383725,Jarra 9 Colección Semana De La Cerveza De Paysandú Año 1974,14000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU707435690,Antigua Jarra 42 Colección Semana De La Cerveza De Paysandú,14000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU949806998,Coleccionable Album Mexico 70 Incompleto Con Suplemento,3900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU696591986,Jarra 9 Colección Semana De La Cerveza De Paysandú Año 1974 Blanco,13500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU474796414,Única Antigua Balanza De Platos En Marmol Negri Q F- C/cepo ,550,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU669463834,Antigua Tijera Esquila Inglesa Cazador Juan Mailhos Sellada Negro,3800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU709855310,Antigua Insignia Inglesa Leyland Tigre Esmaltado 36x19,7500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU740667384,Encendedor Zippo Original Usa Grabado Harley-davidson,1700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU645679153,Antiguo Cuchillo Lengua D Víbora Vaina Plata Cinc. 23 D Hoja Marrón Claro,350,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU701872092,Enorme Pasteca Antigua Centenaria 47 Alto Total Sin Polillas,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU711684424,Antigua Jarra 8 Semana De La Cerveza De Paysandú Año 1973,3900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU478969183,Heladera Conservadora Coca-cola Con Detalles Vintage - Leer,5000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU620950466,Navaja Solingen Germany Muy Sana Con Su Estuche,1200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU602032028,Antiguo Juego De Estribos Broqua&scholberg Sol Sellados ,700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU742445188,Jarra 58 Colección Semana De La Cerveza De Paysandú Año 2025 Blanco,3600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU676634310,Jarra Alemana Sellada Coleccionable Tapa De Peltre Impecable Rosa Pálido,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU665429738,Antigua Jarra D Cerveza Tapa Peltre Origen Rep. Checa 25 Alt,2000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU650137671,Jarra 11 Colección Semana De La Cerveza De Paysandú Crema,4000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU649358323,Reliquia! Álbum Completo Goles Y Dobles 1950,280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU709920484,Colección Completa Batimovil Batman Escala 1/32  C/ Revistas Negro,7500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU724909780,Antiguo Casillero De Hierro Con 8 Botellas Vidrio Conaprole,4800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU912942216,Coleccionable Antiguo Reloj De Sereno Zenith Suizo Sin Llave,2300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU649214173,Antigua Alcancía Banco Caja Obrera Animales Gris,2400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU646849850,Jarra 7 Colección Semana De La Cerveza De Paysandú 1972 Leer,2700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU686597380,Antigua Punta De Mástil De Bandera Moharra Bronce Macizo Moharra,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU848699576,Antiguo Cartel De Chapa Yerba Armiño Original  1 Metro X 60.,4200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU696591950,Jarra Colección Semana De La Cerveza De Paysandú 46 Azul,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU649435965,Reliquia Coleccionable Álbum Fútbol Uruguayo 1958 Incompleto,6500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU455086661,Antiguo Tintero Escribania Año 1950 Marmol 39x19 - Muy Sano,2900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU614590415,Araña Inglesa 6 Brazos Bronce Macizo Pesada Funcionando Sana,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU645376621,Botella 50 Aniversario De Coca Cola Bronce Macizo C/estuche,3500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU656794228,2 Antiguas Navajas De Barbero Broqua Y Solingen Coleccion,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU634128959,Antigua Botella La Ideal De La Bolita Muy Sana 23 De Alto.,120,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU657138204,Antigua Bomba Cerveceria Uruguaya Sellada Sana Funciona ,4900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU669986022,Porsche Cayenne Escala 1:18 Die Cast Max Motors Negro,2500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU678188808,Antigua Chapa Almacén Litografiada De Coca-cola 30 De Diam.,3400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU621297516,Jarra Conmemorativa 100 Años Club A. Peñarol Impecable,4500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU618964215,Jarra 39 Coleccion Semana De La Cerveza De Paysandú Año 2004,3000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU474319194,Único Porrón Cerveceria Del Uruguay Sellado Lleno Original.,5500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU676969222,Chapa C. A. Peñarol Galvanizada Litografiada 43x18 Nueva ,1700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU748414148,Auto A Escala /43 Colección Brumm Francia En Su Estuche Orig,1900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU633339111,Bandeja Espejo Colección Coca-cola Base De Corcho 44 X 33.,2500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU445691361,Medalla Series De Coleccion Limitada Usa -nasa Columbia 1983,1000,baja_detectada
-2026-03-10T09:41:24.764295+00:00,30727726,MLU444871803,Edicion De Coleccion-pilsen Cerveza Especial- Sellada 620ml,1500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU949685224,Uruguay Panorama Libro Lujosa Colección Fotográfica Aguaclar,980,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706081272,Psiglo Ideacion Clave 42701 1973 Rock Uruguay Disco Vinilo Estándar,5800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU800399326,Totem Descarga Gatefold De La Planta Disco Vinilo Candombe Estándar,3880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU887583082,Candombe Zucara Gavioli  Rada Dino Dogliotti Disco Vinilo Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU889081138,Lagrima Rios Luna Y Tamboriles Candombe Afro Uruguay Vinilo Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706476782,Disco Vinilo Los Campos Mi Reino Bajo El Sol Rock Uruguay Estándar,580,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU887465324,Cacho Bochinche Seleccion Musica Infantil Niños Disco Vinilo Estándar,980,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU653532997,Julio Sosa El Firulete Tango Milonga Uruguay Disco Vinilo Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU907460084,"Los Iracundos Impactos, Para Jovenes Solamente Rock Pop Lote Estándar",680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU642517127,Solari Luis A Cuadro Pintura Grabado Fantasmon,345,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU887466552,Lo Mejor Del Carnaval Uruguayo Murgas Lote 2 Discos Vinilo Estándar,680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU647817885,Piero Mi Viejo Juan Boliche Etc Disco Vinilo Pop Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU889075874,"D. Viglietti Canciones Chuecas, Tropicos Lote 2 Vinilos Folk Estándar",580,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU685677056,Zara Campera Chaqueta Parka Capucha Azul Como Nueva,1880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU980410576,Irobot Braava Jet 240 Robot Trapeador Mopa A Batería Limpiad Blanco,6977,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU684970666,Lente Sol Girasole Oval Negro Marco Metal Indio Solari Style Negro,680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU724146548,Disco Vinilo Les Luthiers Vol 4  Comedia Humor Musical Estándar,580,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU664356902,Chapa Esmaltada Metal Vintage 60x30 Cm Playa De Custodia  Playa De Custodia,2880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU653546283,Sonora Borinquen Exclusivo!! Carlos Goberna Cumbia Salsa Uy Estándar,980,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU978588512,Folklore Uruguayo Chalar Benavides Fossati Etc Disco Vinilo Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU685026944,Los Olimareños Rumbo Disco Vinilo Folklore Canto Popular Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU657646970,Lentes Sol Roxy Estilo Aviador Armazon Metal Girl Niña Verde Oscuro Plateado,1280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU634507909,Vinilo Cacho Castaña Quieren Matar Al Ladron Cafe La Humedad Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU607824079,Libro La Musica En El Uruguay - Lauro Ayestaran 1a Edición.,6500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706310354,Larbanois Carrero Cuando Me Pongo A Cantar Disco Vinilo Estándar,1280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU654738620,Astor Piazzolla  1944-1964 Disco Vinilo Tango Musica ,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706386874,Romeo Gavioli Candombe Musica Uruguay Disco Vinilo Estándar,580,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU803844028,Alfredo Zitarrosa Milonga Madre Disco Vinilo Folk Uruguay Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU634194153,12 Conjuntos Beat Argentino For Export Disco Vinilo Rock Pop Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU633296961,João Gilberto Samba   Mpb Brasil Bossa Nova Disco Vinilo Original,1880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU1006833768,Los Olimareños Cielo Del 69  Disco Vinilo Folk Canto Popular Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU887518224,Canciones Para No Dormir La Siesta Cht! Disco Vinilo Estándar,1280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU647676735,Anibal Sampayo A Jose Artigas Aurora Lucha Ocaso Disco Vinil Estándar,980,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU647766083,Disco Vinilo Mercedes Sosa Cantata Sudamericana Folklore Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU653899452,Goyeneche Troilo Autografiado Tango Milonga Disco Vinilo,1280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU654403484,Los Blue Caps Disco Lote 3 Vinilos Rock Paraguay Pop Beat Estándar,1480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU887468708,Santiago Chalar Como Yo Lo Siento Folklore Uruguay Vinilo Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU606874196,Cartel Publicidad Antigua. Tabaco Propaganda,650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU634533235,Les Luthiers Vol 3  Vinilo Disco  Estándar,680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706475356,Antimurga Bcg Entre Locos Y Loquitos Carnaval Disco Vinilo Estándar,980,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU634207149,Los Naufragos Grandes Exitos Disco Vinilo Rock Pop Argentino Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU606832637,"Muñeca Horsman Dolls Musical Pull String Y Movimiento, Vtg",1680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU653533679,"Zucara, Sol Y Palma Etc Derrochando Coplas Folklore Uruguay Estándar",680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706169452,Disco Vinilo Carnaval Murga Omar Romano Los Del Altillo Estándar,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU706335034,Himno Nacional Uruguayo Rara Version Texturada Sudafrica Estándar,680,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU647714211,Disco Vinilo Mercedes Sosa Hasta La Victoria Folklore Estándar,480,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU656990570,The Supersonics E Papo Firme Vol. 4 Brasil Rock Disco Vinilo Original,880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,81598742,MLU615527507,Live Cream Eric Clapton Disco Vinilo Rock,1280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU660271896,"Psilocibina : La Guia Definitiva Para Los Efectos Magicos Y El Uso Seguro De Los Hongos Psicodeli..., De Stephen Green. Editorial Independently Published, Tapa Blanda En Español",2450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU697219848,Constelaciones Familiares. Guía Para Conocer Y Sanar Las Rel,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU804559330,Nuestra Princesita - El Álbum Del Bebé,2750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU741678438,Conmigo Siempre de Laura Vidal Editorial Independently Published Tapa Tapa Blanda Edición December 16 2022 en Español 2022,1843,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU996050360,Biblia Reina Valera 1960 Devocional Centrada En Cristo Lujo,4500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU853004412,Libro UVE Timmy Manuel y el Misterio de los Niños Poseídos Uve,1821,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU863168230,"Pedro y la Magia del Pensamiento de José Luis Haveira, Tapa Blanda 2025",1185,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1009752258,"Reina De Sombras, De Maas, Sarah J.. 1567, Vol. 1. Editorial Editorial Hidra, Tapa Blanda, Edición 1 En Español, 2025",2193,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU884307200,"Cerebro Equino Cerebro Humano: La Neurociencia De La Equitación, De Jones, Janet L.., Vol. 1. Editorial Ediciones Tutor, S.a., Tapa Blanda En Español",2280,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU666123536,"Libro Violet hace el puente sobre la hierba, de Del Rey, Lana. Editorial Libros Cupula, tapa dura",2132,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU631882787,Number The Stars - Harper Collins Uk Kel Ediciones,2150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU693167272,Libro Codigo De Las Mentes Extraordinarias - Vishen Lakhiani,2450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU732216560,"Prospectos De M, De Alex Hormozi. Editorial Acquisition, Tapa Blanda En Español, 2024",2013,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1029309702,"Libro Freud Padre Del Psicoanálisis 40 Fichas Conductuales, De Varios Autores. Editorial Tikal Ediciones ( 2025)",2736,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1090120090,"Libro Aprendiendo A Amarme - Sara Espejo, De Espejo, Sara. Editorial Sara Espejo, Tapa Blanda (2025)",2750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU787391332,"Pissoteando Mitos: Oratoria Y Motivación Por Franco Pisso: Pissoteando Mitos, De Franco Pisso. Editorial Tinta De Luz, Tapa Blanda En Español, 2022",2750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU644231457,"Nuestra Pequeña Gran Historia: Un Libro Para Celebrar El Embarazo, La Llegada Del Bebé Y Nuestros Primeros Recuerdos Juntos, De Vv. Aa.. Editorial B De Blok, Tapa Dura En Español, 2023",2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU677032062,"Una Breve Historia De Casi Todo - Bryson,bill",2835,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU728061756,"El Proyecto Educativo De Supervisión - Pes: Una Herramienta De Gestión Para Directivos Y Supervisores. E, De Sandra Sánchez Y Néstor Zorzoli., Vol. 1. Editorial Noveduc, Tapa Blanda En Español, 2023",2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU756471638,Memento Mori Recuerda tu muerte Masculinidad and Sociedad Humberto Montesinos Editorial Independently Published Tapa Blanda en Español 2025,1964,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU961152240,"Libro Mi Niñera De La Kgb, De Laura Elisa Ramos, Vol. Único. Editorial Lumen / Penguin Random House, Tapa Blanda",2576,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1041015522,"Jugarse La Piel, De Taleb, Nassim Nicholas. Editorial Booket En Español",1741,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU714185506,"Libro Rojo, El, De Jung, Carl Gustav. Editorial El Hilo De Ariadna, Tapa Blanda En Español, 2019",4600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU652109478,"Libro Diabetes sin problemas, de Frank Suarez, vol. 100. Editorial METABOLIC PRESS, tapa blanda ( 2015)",800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU844995030,"Claves Del Yoga, De Hernández,danilo. Editorial Editorial Canal De Distribucion, Tapa Blanda En Español, 2025",1025,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU649216174,Evaluaciones : 29 Preguntas Y Respuestas - Anijovich - Cappe,1119,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU649115108,Mentalidad Mamba / The Mamba Mentality: Secretos De Mi Éxito,2550,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU925803096,"Perreo, Una Revolución: Una revolución, de Cazzu. Editorial Reservoir Books, tapa blanda en español, 2025",2138,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU925792312,"El Barco De Teseo, De V. M. Straka. Editorial Duomo Ediciones, Tapa Blanda En Español",2450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU886198504,"Libro Saquennos De Aqui, Católico, Nicky Eltz [ Dhl ]",2150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU702434416,"Cuando Ya No Estás, De Laura Vidal. Editorial Vergara, Tapa Blanda En Español, 2021",1890,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU982841864,Burlar Al Diablo por Napoleon Hill - de Editorial Quarzo en Tapa Blanda,1850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU889461694,Biblia De Jerusalen 5ta Edicion - Desclee - Libro Tapa Dura,3850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU628092022,Libro Más Astuto Que El Diablo - Napoleon Hill,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU727997306,Fundamentos De Tc De Alta Resolución Pulmonar,4561,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU648669567,Te Serviré de Paula Bistagnino por Editorial Planeta en Tapa Blanda Edición 1 En Español,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU739987626,"La Teoría Sintergica, De Grinberg-zylberbaum, Jacobo. Editorial Roca Editorial, Tapa Blanda En Español, 2025",2450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU873719712,"Libro Cero miligramos, de Talledo, Santi. Editorial ZMG Media Group, tapa blanda (2024)",2835,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1044629576,"Explicaciones De Fronteras Inexplicables, De Un Mundo Inmenso. Editorial Ediciones Peninsula, Tapa Dura En Español, 2024",1600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1034268514,"Libro El Dolor Silencioso Del Hombre, De Cristhian Daniel Gaona. Editorial Independently Published, Tapa Blanda",1803,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1042770714,"Un paso por delante de Wall Street: Cómo utilizar lo que ya sabes para ganar dinero en bolsa, de Peter Lynch., vol. 0.0. Editorial Deusto, tapa blanda, edición 1.0 en español, 2015",2880,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1066547700,"Libro Hoy Estoy Mal, Mañana Estaré Mejor, De Victoire Charlie. Editorial Independently Published, Tapa Blanda (2023)",2300,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU1034320504,"Yo Tendria Que Estar Muerta, De Julieta Prandi. Editorial The Orlando Books, Tapa Blanda En Español, 2024",2255,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU628795848,"Sociedad Del Cansancio, La - 2 Ed. - Byung Chul Han",620,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU907452964,Libro Cocinología La Ciencia De Cocinar [ Pasta Dura ] Dk,1400,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU666968150,Recuerdos Que Mienten Un Poco - Libro Indio Solari,3748,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU644187249,Libro Espérame En El Arcoíris de Laura Vidal en Español tapa blanda 2019,2250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,440298103,MLU666864172,Analisis Tecnico De Los Mercados Financieros [ Original ],5100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU612669280,Cuchilla Antigua De Buen Tamaño!!,1850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU656830092,Chaira Antigua Para Afilar Cuchillos,650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU643140777,Caja Con Accesorios Para Maquina De Coser Singer Antigua Plateado,1250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU621916904,Cuchillo Antiguo Campo O Caza Tamaño Y Espesor C/ Vaina,3900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU644842342,Cuchillo Antiguo Franz Wenk Solingen  C/ Vaina Suela,4500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU455493881,Cuchillo Marca Cascabel Con Vaina Hoja 0.13 Largo Total O.22,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU863180226,Cuchillo Antiguo Criollo Genérico Vintage Colección Marrón,2150,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU480563029,Fusta Antigua Largo 65 Cms.,1250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU617092965,Billete $100 Bcu Muestra Sin Valor Serie E Nª 0 Encapsulado,2800,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU992715922,20 Sellos Club Nacional De Futbol Campeon De America 1971,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU1090114574,Juego Cubiertos 96 Piezas Plata Lappas Baño Cuadruple S/ Uso Plateados,11500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU444681244,Cuchillo Facon Cascavel C/ Vaina Hoja 34 Cms Total 47 Cms.,5750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU653074775,"Olla Essen Clásica Marsala 4,5 L Para Cocina Azul",6500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU451020163,Reloj Pulsera A Cuerda De Hombre Marca Stewag Funcionando!!!,4900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU804637460,Cuchillo Antiguo Marca Corneta De Solingen Con Vaina Negro,5900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU959485316,Cajonera Antigua De Roble De Un Cajon Marrón,1250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU673855012,Farol Antiguo Marca Coleman  Con Caja De Madera,3900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU452032929,Reloj Antiguo De Un Carrillon De Pared Fadola Funcionando!!,12500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU469379800,Cuchillo Antiguo Sellado Ciervo Hoja De 15 Cms.,2200,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU618074804,Cuchillo Antiguo Hecho Con Hoja De Tijera Inglesa C/ Vaina,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU637894989,6 Cuchillos Alemanes Antiguos Rostfrei Solingen Sellados,1450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU445511040,Reloj De Pulsera Aguila 17 Rubies Hombre Cuerda Funcionando,3600,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU696569490,Machete Antiguo Tramontina Hoja Acero Al Carbono,1450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU602968949,Cuchilla Antigua Sellada Ipaya,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU980410704,Farol De Barco De Chapa De Bronce Fanal Rojo Funcionando,3950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU666252960,Botella Antigua Militar De Porcelana Whisky White Heather ,1900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU467911220,Tijera Antigua De Esquilar Tuzar Marca Mailhos Sellada ,1650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU460931128,Cuchillo Gardeliano Antiguo!! Con Vaina Hoja De 9.5 Cms.,2100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU476929456,Farol Antiguo De Hierro Estilo Ingles Para Pared,3100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU612728481,Cuchilla Hacha Antigua Curva Y De 2 Filos Gran Porte Porte!,3100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU863972892,Aplique Antiguo De Pared Bronce 2 Brazos Estilo Holandes,1750,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU922211568,Chapa Cartel Antigua Esmaltada,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU454712563,Cuchillo Antiguo De Acero Solingen Hoja 18 Cms. Total 31 Cms,2850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU612700232,Moneda 1 Dolar Usa. John Quincy Adams Años 1825-1829,1350,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU636452650,Base Antigua De Lampara De Pie De Hierro Forjado,4500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU862995504,2 Tulipas Antiguas De Vidrio Labrado En Relieve Blanco Relieve,1100,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU449967179,Llamador Antiguo De Puerta Mano De Hierro Fundido- La Grande,3700,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU458263057,Ventilador Antiguo Funcionando (no Oscila) Marca Limit ,1950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU475245985,Juego 24 Cubiertos Antiguos S/ Uso Germania Acero Solingen Plateado,8500,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU605907897,Reloj Carga Manual Olma Hombre Esfera Color Funcionando No Tiene,3450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU612667732,Moneda Mexicana $1000 Año 1988 Juana De Asbaje,1350,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU659091842,Cuchillo Gurka Kukri Nepal Hoja Labrada Cabo Parte De Hueso,2900,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU467730333,Cuchillo Antiguo Con Cabo De Bronce Y Madera Pesado! ,1850,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU474873429,Buena Cuchilla Antigua Con Hoja Acero Al Carbono,1450,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU608460792,Navaja Antigua Española Hoja Resorte Perfecto Estado,1250,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU444907327,Cuchillo Antiguo Solingen B M Con Vaina Hoja 0.17 Total 0.29,2650,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU464061154,Cuchilla Antigua Tramontina Hoja 22 Cms. Total 35 Cms.,950,baja_detectada
-2026-03-10T09:41:24.764295+00:00,82819150,MLU475461977,Cuchillo Antiguo Con Vaina Cabo De Hueso Sellado,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU949685224,Uruguay Panorama Libro Lujosa Colección Fotográfica Aguaclar,980,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706081272,Psiglo Ideacion Clave 42701 1973 Rock Uruguay Disco Vinilo Estándar,5800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU800399326,Totem Descarga Gatefold De La Planta Disco Vinilo Candombe Estándar,3880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU887583082,Candombe Zucara Gavioli  Rada Dino Dogliotti Disco Vinilo Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU889081138,Lagrima Rios Luna Y Tamboriles Candombe Afro Uruguay Vinilo Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706476782,Disco Vinilo Los Campos Mi Reino Bajo El Sol Rock Uruguay Estándar,580,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU887465324,Cacho Bochinche Seleccion Musica Infantil Niños Disco Vinilo Estándar,980,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU653532997,Julio Sosa El Firulete Tango Milonga Uruguay Disco Vinilo Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU907460084,"Los Iracundos Impactos, Para Jovenes Solamente Rock Pop Lote Estándar",680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU642517127,Solari Luis A Cuadro Pintura Grabado Fantasmon,345,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU887466552,Lo Mejor Del Carnaval Uruguayo Murgas Lote 2 Discos Vinilo Estándar,680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU647817885,Piero Mi Viejo Juan Boliche Etc Disco Vinilo Pop Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU889075874,"D. Viglietti Canciones Chuecas, Tropicos Lote 2 Vinilos Folk Estándar",580,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU685677056,Zara Campera Chaqueta Parka Capucha Azul Como Nueva,1880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU980410576,Irobot Braava Jet 240 Robot Trapeador Mopa A Batería Limpiad Blanco,6977,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU684970666,Lente Sol Girasole Oval Negro Marco Metal Indio Solari Style Negro,680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU724146548,Disco Vinilo Les Luthiers Vol 4  Comedia Humor Musical Estándar,580,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU664356902,Chapa Esmaltada Metal Vintage 60x30 Cm Playa De Custodia  Playa De Custodia,2880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU653546283,Sonora Borinquen Exclusivo!! Carlos Goberna Cumbia Salsa Uy Estándar,980,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU978588512,Folklore Uruguayo Chalar Benavides Fossati Etc Disco Vinilo Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU685026944,Los Olimareños Rumbo Disco Vinilo Folklore Canto Popular Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU657646970,Lentes Sol Roxy Estilo Aviador Armazon Metal Girl Niña Verde Oscuro Plateado,1280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU634507909,Vinilo Cacho Castaña Quieren Matar Al Ladron Cafe La Humedad Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU607824079,Libro La Musica En El Uruguay - Lauro Ayestaran 1a Edición.,6500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706310354,Larbanois Carrero Cuando Me Pongo A Cantar Disco Vinilo Estándar,1280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU654738620,Astor Piazzolla  1944-1964 Disco Vinilo Tango Musica ,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706386874,Romeo Gavioli Candombe Musica Uruguay Disco Vinilo Estándar,580,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU803844028,Alfredo Zitarrosa Milonga Madre Disco Vinilo Folk Uruguay Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU634194153,12 Conjuntos Beat Argentino For Export Disco Vinilo Rock Pop Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU633296961,João Gilberto Samba   Mpb Brasil Bossa Nova Disco Vinilo Original,1880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU1006833768,Los Olimareños Cielo Del 69  Disco Vinilo Folk Canto Popular Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU887518224,Canciones Para No Dormir La Siesta Cht! Disco Vinilo Estándar,1280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU647676735,Anibal Sampayo A Jose Artigas Aurora Lucha Ocaso Disco Vinil Estándar,980,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU647766083,Disco Vinilo Mercedes Sosa Cantata Sudamericana Folklore Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU653899452,Goyeneche Troilo Autografiado Tango Milonga Disco Vinilo,1280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU654403484,Los Blue Caps Disco Lote 3 Vinilos Rock Paraguay Pop Beat Estándar,1480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU887468708,Santiago Chalar Como Yo Lo Siento Folklore Uruguay Vinilo Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU606874196,Cartel Publicidad Antigua. Tabaco Propaganda,650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU634533235,Les Luthiers Vol 3  Vinilo Disco  Estándar,680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706475356,Antimurga Bcg Entre Locos Y Loquitos Carnaval Disco Vinilo Estándar,980,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU634207149,Los Naufragos Grandes Exitos Disco Vinilo Rock Pop Argentino Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU606832637,"Muñeca Horsman Dolls Musical Pull String Y Movimiento, Vtg",1680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU653533679,"Zucara, Sol Y Palma Etc Derrochando Coplas Folklore Uruguay Estándar",680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706169452,Disco Vinilo Carnaval Murga Omar Romano Los Del Altillo Estándar,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU706335034,Himno Nacional Uruguayo Rara Version Texturada Sudafrica Estándar,680,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU647714211,Disco Vinilo Mercedes Sosa Hasta La Victoria Folklore Estándar,480,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU656990570,The Supersonics E Papo Firme Vol. 4 Brasil Rock Disco Vinilo Original,880,baja_detectada
+2026-03-10T21:27:53.209968+00:00,81598742,MLU615527507,Live Cream Eric Clapton Disco Vinilo Rock,1280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,440298103,MLU900589550,Testamento Latinoamericano - Verbo Divino,1100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,440298103,MLU659667106,"Flashcards De Anatomía, De Netter., Vol. 1. Editorial Elsevier, Tapa Dura, Edición 6 En Español, 2023",4200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,42794274,MLU461432705,Uruguay Antigua 20 Cents De Plata Año 1893 Escelente Estado.,1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,191098554,MLU477451588,Antigua Bomba De Agua Ose Metal Y Mármol Miniatura,700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU801191958,"Gemelos Ingleses,  Art Deco, Bronce Y Esmalte. Sellados Azul",1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU617717817,"Antiguo Cuello De Encaje Ingles Hecho A Mano, Siglo 19, Impe",1550,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU801868128,"Gemelos Ingleses, Sellados.  Art Deco Bronce Y Esmalte Azul",1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU602877524,"6 Botones De Esmalte Cloisonne  Sin Uso , Fondo Turquesa ",1300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU732293912,Cuchillo Artesanal Con Magnífico Cabo De Asta De Ciervo Marrón,3200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU707880616,"Navaja Sevillana, Hoja Grabada Con  La Girarlda De Sevilla Marrón",2600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU459585581,"Antiguo Oleo Sobre Madera, Firmado",1900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU963095752,"Reloj Tressa P/dama, Vintage, Esfera Negra, Funcionando Perf Marrón",1450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU693167932,Talero De Cuero Trenzado A Mano Y Suela Cuero,1800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU819733148,"Collar De Cuentas De Marfil, Antiguo, Cierre De Rosca Matgil",3200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU656831597,"Reloj Citizen Cuarzo Rectangular, Dorado Y Correa Original Marrón Oscuro Hialino Crema",1600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU697337828,Bombilla Curva De Plata Y Cartela Con Iniciales En Oro Plata,1800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU618172255,"Tijerita De Plata 800 , Cincelada Y Sellada Para Bordado ",1800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU697006606,"Encendedor Antiguo De Metal De Trinchera, 2° Guerra Mundial",1800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU727174466,Par De Espuelas De Hierro Antiguas C/cadenillas Y Tientos,5200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU646824349,"Reloj Pulsera Para Dama, Art Nouveau Aprox 1820 Num. Romanos Bordeau",2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU603409569,"Espejo De Mano , Carey Y Plata Birmigham  Principios  S.20",2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU654942637,"Reloj De Bolsillo, Plata 800 Sellado Y Num. Doble Numeracion Plata",4000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU654306923,"Set De Cubiertos  Encastrados Asados Cabos De Hueso, Ac Inox",1500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU706131018,"Prismáticos Navales, Mark 33, 6x30 Año 1944 Estuche Original",2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU848852446,"Caracola Rosada, Reina Adulta.  Lobatus Giga, Enorme !! Sana",1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU1068949332,"Reloj De Bolsillo, Esfera Blanca, N° Romanos,agujas Dorados Plat",3800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU638939126,"Espejo Veneciano, Original , Antiguo , Guarda De Cristal ...",5500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU713027596,"Jgo Parker, Lapicera Vacumatic Y Lapiz  Azul Veteado Estuche Azul",6000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU960051624,"Cadena P/ Reloj De Bolsillo, Doble Enchapado Impecable Oro",2600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU654137463,Densìmetro  U Hidrómetro Con Escala Estuche Original,1350,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU925906756,Antiguo Mate Isabelino De Porcelana. Galleta Con Asa,2200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU652128435,"2 Monedas De Cobre , 4 Cent. Uruguay",900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU618164865,Top O Sujetador De Atuendo Para Danza Del Vientre,3000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU707267136,Largavistas De Teatro De Nácar  Con  Estuche   Iris - Paris,4200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU477264464,Joya Collar Masoneria Grado 31,2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU615064304,"Antigua Navaja De Metal,  Múltiple Con 10 Elementos Gris",1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU684371990,"6 Posa - Cubiertos Christofle,  Clásicos Sellados, 7,5 Cms.",2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU735329766,"Cruz De Plata Con Marquesitas,  Diseño Art Deco",2400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU751675274,Antig Guardapelo Enchap. Con Piedra Cabuchon Roja Y Perlitas,2500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU653115331,"Antiguo Mate  Isabelino De Porcelana Alemana, Dec. Flores",1600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU672014024," Chanchito, Alcancía  De Porcelana Alemana, Impecable Y Sano Crema Y Verde",3500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU700447642,Lata - Maletin De Chapa Litografiada De La Antigua Yerba Uma,2600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU641164324,"Colgante Mexicano, Bombe, Bi-faz. Fdo Turquesas Y Malaquita ",1250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU643975871,"Cafetera De Peltre Antiguo, Sellada Volf",1600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU653772485,"Antiguo Mate Isabelino Blanco ,de Porcelana, Realces Dorados",2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU737232810,"Relicario O Guardapelo, Motivos Hipicos.  Enchapado",2200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU787541506,"Brújula I Guerra Mundial Espejo P Señales, Lupa Móvil Y Dobl Negro",2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU628911602,"7 Boletos Capicua, Cuctsa Y Raincoop ",1000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU680201422,"Perfumero Antiguo  Chritian Dior   Diorissimo , Original ",1100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU726489188,"Lentes De Sol Antiguos, Patillas Flexibles Oro Fix Con Est.",2950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU826346526,"Gran Polvera De Guampa C/ Tapón, Para Carga De  Armas Largas",1500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,165896717,MLU1069531622,"Reloj Mountain , Carga Manual, Malla Acero Metal Hialino Plateado",2200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU628230403,Juego De Gubias Para Tallar Madera En Acero Al Carbono,1600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU609674017,Hoja Sola Para Hacer Cuchillo Criollo. Marca Ñandu De 14 Cm Azul Acero,770,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU624703594,Kangol Gorra Tipo Inglesa De Verano. Talle 57/58 M,2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU617132029,Hoja Acero 440 Para Encabar Marca Seigen.  Hoja 20 Cm.botón,1300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU607316194,Estuche Kindle Oasis 9a Y 10a Versión ( Últimos 7pulgadas) Negro,50,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU613258451,Cinto Levis Made In Usa. Nuevo Marrón Liso 105,2900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU478890892,Gubia Para Tallar Madera Marca Mora De Suecia. Hoja De 6 Cm,2700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU848736220,Kangol Boina  En Lana . Talle L 57/59 Cm. Verde Ingles,3000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU960692078,Kangol Gorra Verano Beige L 57/58,2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU445716909,Boina En Cuero Legitimo Color Negra. Todos Los Talles,1750,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU636716302,Gorro De Cuero Verdadero Marrón Claro. Talle Úniversal.,1600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU479166705,Boina Marrón Chocolate En Paño Lana .talle Universal,450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU659999770,Importante Espada Gladiador En Acero Damasco. 31 Cm Hoja Azul Marino,155,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU630156889,Böker Cuchillo De Gaucho Con Cabo Asta De Ciervo. Hoja De 20 Bordó,420,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU848842664,Cuchillo Acero Damasco Para Capar Marrón,75,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU678190328,Buck 120 Cuchillo De Lujo Cabo Cocobolo 19 Cm Hoja Marrón Oscuro,300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU659128372,Espada Romana Gladius 43 Cm Hoja Y 61 Cm Largo Total . Nueva,110,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU652654677,Navaja Buck 110 Cabo Ebano New Ébano,125,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU638666870,Katana Con Cabo Y Vaina De Madera. Buen Acero Marrón Claro,175,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU601481326,Cuchillo Acero Damasco Kukris Con Funda Cuero 18 Cm Hoja.,120,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU648573492,"Cuchilla Acero Damasco Para Chef, Hoja 20 Cm Largo Total 34 Azul Marino",120,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU777957560,Gorro Ruso (ushanka) 60/ 62 Cm Circunferencia Interior.,130,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU662001436,Cuchillo Acero Damasco Para Capar Con Funda. 20 Cm Totales Azul Acero,75,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU628015184,Katana Acero Carbono C/ Funda.largo Total 1 Mts Con Hoja 73 Bordó,175,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU626331613,Campera Inglesa De Hilo Encerado Color Verde Talle S .,160,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU624760996,Mora- Gubia Para Tallar Madera Punta Roma Para Principiante,2500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU629729240,"Cuchillo Acero Damasco Diseño Exclusivo Original. Hoja 9,5cm Índigo",60,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU611773695,Puukko Cuchillo Finlandés 6 Cm Hoja Y 13 Cm Totales C/ Vaina Índigo,78,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU459605147,"Mora, Cuchilllo Sueco Acero Inoxidable. El Mejor Acero .",99,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU660583544,Karambit Cuchillo Acero Damasco Con Vaina Cuero. Azul Marino,75,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU625214161,Cuchilla Acero Damasco 20 Cm Hoja. Buen Peso Y Equilibrio Turquesa,110,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU623041107,Importante Daga En Acero Damasco/cabo Madera Dura.27 Cm Hoja Turquesa,170,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU778009948,Gorro Original Ruso 56 O 58 Cm Circunferencia Interna.,100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU853050048,Helle Noruego Puñal Verijero Madera,135,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU657688410,Puma Cuchillo Aleman Nuevo 24 Cm Totales Con 13 Cm Hoja. Crema,420,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU615527299,Cuchilla Acero Damasco 20 Cm Hoja Cabo Madera Agua,100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU610716232,Navaja Acero Damasco 8 Cm De Hoja Cabo De Búfalo Negro,50,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU634064133,Cuchillo Acero Damasco 25 Cm Largo Y 14. Cm De Hoja Marrón Oscuro,90,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU604965541,Boina De Hilo Unisex Talle Único . Envío A Todo El País,700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU615502454,Cuchillo Acero Damasco 13 Cm Hoja - Vaina Suela- Muy Robusto Agua,90,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU769871914,Kangol Gorra Paño De Lana Azul Marino 56/57,2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU652271345,Gorro Ruso No Militar Ushanka. 58:60 Cm.negro.,2650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU672534294,Buck 119 Cuchillo Americano.26 Cm Largo Y 14 Cm Hoja. Rosa Claro,150,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU444298536,Mora - Hoja Cuchillo Mora . Unicas  Del Famoso Acero Sueco.,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU634557591,Cuchilla Zwilling Pro  Los Mellizos  Alemana. Nueva 20 Cm Blanco,150,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU612588148,Gorra Inglesa 8 Bastones,70,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU659753934,Acero Damasco Mod. Karambit Con Vaina De Cuero Chocolate,95,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65437681,MLU659740442,Cuchillo Acero Damasco Nuevo 25 Cm Largo Y 14 Cm Hoja. Chocolate,88,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU669099084,Antiguo Cuchillo Criollo Plata Y Oro 30 Cent. De Largo Total Plateado,11500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU702615066,Antiguo Cuchillo De Combate Remington Ejército Uruguayo 1903,5600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU621486174,Antiguo Cuchillo Cabo Plata Franz Wenk Solingen 24 De Hoja.,400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU912864492,Album Figur. Los Trico Y Los Peña - Cacho Y Coquito Completo,3500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU644383725,Jarra 9 Colección Semana De La Cerveza De Paysandú Año 1974,14000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU707435690,Antigua Jarra 42 Colección Semana De La Cerveza De Paysandú,14000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU949806998,Coleccionable Album Mexico 70 Incompleto Con Suplemento,3900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU696591986,Jarra 9 Colección Semana De La Cerveza De Paysandú Año 1974 Blanco,13500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU474796414,Única Antigua Balanza De Platos En Marmol Negri Q F- C/cepo ,550,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU669463834,Antigua Tijera Esquila Inglesa Cazador Juan Mailhos Sellada Negro,3800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU709855310,Antigua Insignia Inglesa Leyland Tigre Esmaltado 36x19,7500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU740667384,Encendedor Zippo Original Usa Grabado Harley-davidson,1700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU645679153,Antiguo Cuchillo Lengua D Víbora Vaina Plata Cinc. 23 D Hoja Marrón Claro,350,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU701872092,Enorme Pasteca Antigua Centenaria 47 Alto Total Sin Polillas,3500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU711684424,Antigua Jarra 8 Semana De La Cerveza De Paysandú Año 1973,3900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU478969183,Heladera Conservadora Coca-cola Con Detalles Vintage - Leer,5000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU620950466,Navaja Solingen Germany Muy Sana Con Su Estuche,1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU602032028,Antiguo Juego De Estribos Broqua&scholberg Sol Sellados ,700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU742445188,Jarra 58 Colección Semana De La Cerveza De Paysandú Año 2025 Blanco,3600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU676634310,Jarra Alemana Sellada Coleccionable Tapa De Peltre Impecable Rosa Pálido,3000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU665429738,Antigua Jarra D Cerveza Tapa Peltre Origen Rep. Checa 25 Alt,2000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU650137671,Jarra 11 Colección Semana De La Cerveza De Paysandú Crema,4000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU649358323,Reliquia! Álbum Completo Goles Y Dobles 1950,280,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU709920484,Colección Completa Batimovil Batman Escala 1/32  C/ Revistas Negro,7500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU724909780,Antiguo Casillero De Hierro Con 8 Botellas Vidrio Conaprole,4800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU912942216,Coleccionable Antiguo Reloj De Sereno Zenith Suizo Sin Llave,2300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU649214173,Antigua Alcancía Banco Caja Obrera Animales Gris,2400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU646849850,Jarra 7 Colección Semana De La Cerveza De Paysandú 1972 Leer,2700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU686597380,Antigua Punta De Mástil De Bandera Moharra Bronce Macizo Moharra,3500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU848699576,Antiguo Cartel De Chapa Yerba Armiño Original  1 Metro X 60.,4200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU696591950,Jarra Colección Semana De La Cerveza De Paysandú 46 Azul,2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU649435965,Reliquia Coleccionable Álbum Fútbol Uruguayo 1958 Incompleto,6500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU455086661,Antiguo Tintero Escribania Año 1950 Marmol 39x19 - Muy Sano,2900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU614590415,Araña Inglesa 6 Brazos Bronce Macizo Pesada Funcionando Sana,3000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU645376621,Botella 50 Aniversario De Coca Cola Bronce Macizo C/estuche,3500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU656794228,2 Antiguas Navajas De Barbero Broqua Y Solingen Coleccion,1000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU634128959,Antigua Botella La Ideal De La Bolita Muy Sana 23 De Alto.,120,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU657138204,Antigua Bomba Cerveceria Uruguaya Sellada Sana Funciona ,4900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU669986022,Porsche Cayenne Escala 1:18 Die Cast Max Motors Negro,2500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU678188808,Antigua Chapa Almacén Litografiada De Coca-cola 30 De Diam.,3400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU621297516,Jarra Conmemorativa 100 Años Club A. Peñarol Impecable,4500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU618964215,Jarra 39 Coleccion Semana De La Cerveza De Paysandú Año 2004,3000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU474319194,Único Porrón Cerveceria Del Uruguay Sellado Lleno Original.,5500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU676969222,Chapa C. A. Peñarol Galvanizada Litografiada 43x18 Nueva ,1700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU748414148,Auto A Escala /43 Colección Brumm Francia En Su Estuche Orig,1900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU633339111,Bandeja Espejo Colección Coca-cola Base De Corcho 44 X 33.,2500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU445691361,Medalla Series De Coleccion Limitada Usa -nasa Columbia 1983,1000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,30727726,MLU444871803,Edicion De Coleccion-pilsen Cerveza Especial- Sellada 620ml,1500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU612669280,Cuchilla Antigua De Buen Tamaño!!,1850,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU656830092,Chaira Antigua Para Afilar Cuchillos,650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU643140777,Caja Con Accesorios Para Maquina De Coser Singer Antigua Plateado,1250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU621916904,Cuchillo Antiguo Campo O Caza Tamaño Y Espesor C/ Vaina,3900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU644842342,Cuchillo Antiguo Franz Wenk Solingen  C/ Vaina Suela,4500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU455493881,Cuchillo Marca Cascabel Con Vaina Hoja 0.13 Largo Total O.22,2650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU863180226,Cuchillo Antiguo Criollo Genérico Vintage Colección Marrón,2150,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU480563029,Fusta Antigua Largo 65 Cms.,1250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU617092965,Billete $100 Bcu Muestra Sin Valor Serie E Nª 0 Encapsulado,2800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU992715922,20 Sellos Club Nacional De Futbol Campeon De America 1971,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU1090114574,Juego Cubiertos 96 Piezas Plata Lappas Baño Cuadruple S/ Uso Plateados,11500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU444681244,Cuchillo Facon Cascavel C/ Vaina Hoja 34 Cms Total 47 Cms.,5750,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU653074775,"Olla Essen Clásica Marsala 4,5 L Para Cocina Azul",6500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU451020163,Reloj Pulsera A Cuerda De Hombre Marca Stewag Funcionando!!!,4900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU804637460,Cuchillo Antiguo Marca Corneta De Solingen Con Vaina Negro,5900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU959485316,Cajonera Antigua De Roble De Un Cajon Marrón,1250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU673855012,Farol Antiguo Marca Coleman  Con Caja De Madera,3900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU452032929,Reloj Antiguo De Un Carrillon De Pared Fadola Funcionando!!,12500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU469379800,Cuchillo Antiguo Sellado Ciervo Hoja De 15 Cms.,2200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU618074804,Cuchillo Antiguo Hecho Con Hoja De Tijera Inglesa C/ Vaina,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU637894989,6 Cuchillos Alemanes Antiguos Rostfrei Solingen Sellados,1450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU445511040,Reloj De Pulsera Aguila 17 Rubies Hombre Cuerda Funcionando,3600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU696569490,Machete Antiguo Tramontina Hoja Acero Al Carbono,1450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU602968949,Cuchilla Antigua Sellada Ipaya,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU980410704,Farol De Barco De Chapa De Bronce Fanal Rojo Funcionando,3950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU666252960,Botella Antigua Militar De Porcelana Whisky White Heather ,1900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU467911220,Tijera Antigua De Esquilar Tuzar Marca Mailhos Sellada ,1650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU460931128,Cuchillo Gardeliano Antiguo!! Con Vaina Hoja De 9.5 Cms.,2100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU476929456,Farol Antiguo De Hierro Estilo Ingles Para Pared,3100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU612728481,Cuchilla Hacha Antigua Curva Y De 2 Filos Gran Porte Porte!,3100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU863972892,Aplique Antiguo De Pared Bronce 2 Brazos Estilo Holandes,1750,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU922211568,Chapa Cartel Antigua Esmaltada,2650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU454712563,Cuchillo Antiguo De Acero Solingen Hoja 18 Cms. Total 31 Cms,2850,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU612700232,Moneda 1 Dolar Usa. John Quincy Adams Años 1825-1829,1350,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU636452650,Base Antigua De Lampara De Pie De Hierro Forjado,4500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU862995504,2 Tulipas Antiguas De Vidrio Labrado En Relieve Blanco Relieve,1100,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU449967179,Llamador Antiguo De Puerta Mano De Hierro Fundido- La Grande,3700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU458263057,Ventilador Antiguo Funcionando (no Oscila) Marca Limit ,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU475245985,Juego 24 Cubiertos Antiguos S/ Uso Germania Acero Solingen Plateado,8500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU605907897,Reloj Carga Manual Olma Hombre Esfera Color Funcionando No Tiene,3450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU612667732,Moneda Mexicana $1000 Año 1988 Juana De Asbaje,1350,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU659091842,Cuchillo Gurka Kukri Nepal Hoja Labrada Cabo Parte De Hueso,2900,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU467730333,Cuchillo Antiguo Con Cabo De Bronce Y Madera Pesado! ,1850,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU474873429,Buena Cuchilla Antigua Con Hoja Acero Al Carbono,1450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU608460792,Navaja Antigua Española Hoja Resorte Perfecto Estado,1250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU444907327,Cuchillo Antiguo Solingen B M Con Vaina Hoja 0.17 Total 0.29,2650,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU464061154,Cuchilla Antigua Tramontina Hoja 22 Cms. Total 35 Cms.,950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,82819150,MLU475461977,Cuchillo Antiguo Con Vaina Cabo De Hueso Sellado,1950,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU472539569,Decoración Vintage: Sartén Grande Pintado A Mano Y Découpage,500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU472015254,2 Pares De Guantes De Trabajo Importados Talle G Excelentes,250,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU873308810,Antigua Lamparita De Porcelana Coleccionable (1022) Sin Uso,500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU669935118,"Caravanas, Colgantes Con Oro En Porcelana Blanca Para Pintar",200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU874356774,"Exquisito Juego De 12 Servilletas De Lino Bordadas, Sin Uso Blanco Flor Bordada",2400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU873802300,"Perfumero Antiguo Sin Estrenar, Miniatura En Piedra Tallada Verdes Y Grises",25,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU480524494,Despojador De Porcelana Blanca Para Decorar O Para Pintar,300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU444133646,Cajas De Fósforos Con Paisajes Con Aves En Dos Dimensiones 2,120,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU444134061,"Potiche Blanco Decorativo Impecable, Con Su Tapa",300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU704446786,"Librofilm Aguilar Museo De Los Impresionistas, En Sus Cajas",850,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU852399376,Mochila Kipling Legítima Única En Uruguay 43cm X 33cm X 20cm,5990,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU819642478,Artículo Francés De Escritorio Antiguo Único: Cachet Crampon,1000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU911691530,Espectacular Cocina Antigua Tappan A Gas Funcionando,10000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU468450656,"Monedas De Canadá Por Lotes ¡lea, Elija Y Consulte!",400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU455669515,Billete Coleccionable Uruguay Nuevito $ 1000 Pesos Antiguo,200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU711271438,Geeely Xr3 Enganche Para Trailer Y Para Luces Como Nuevo,4000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU801178810,Colección De Figuritas Antigua De Chocolates Aguila 1944 Etc Chocolatines Aguila 1944 Y 1960 Cultura Y Deportes Y Esta Es Mi Patria,300,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU649294660,"Pintura Original Sobre Aluminio De Autor Nacional, Enmarcada",700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU655249433,Videocassette Sin Estrenar Para Filmar,400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU472539741,Decoración Vintage:  Jarra Cafetera Antigua Pintada A Mano,700,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU472539888,Decoración Vintage: Antiguo Tarro De Leche Pintado A Mano,750,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU819538182,Baúl Tallado Con Incrustaciones / Caja Con Nácar De La India,600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798375422,Fina Cajita Artesanal De Madera Torneada Decorada Con Resina,400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU787923328,"Plato Decorativo Único, Pintado A Mano, Técnica: Puntillismo Blanco Mujer Japonesa",500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798362550,Cajita Artesanal Tallada En Piedra Procede De Isla De Pascua,400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798388494,Cajita Cilíndrica Chilena De Madera Torneada,150,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798427680,Cajita Metálica Chilena Decorativa Tallada A Mano En Cobre,200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU815445624,Platito Decorativo Israelí Para Jabón Lavanda Con Flores,400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU815446148,Par De Finísimos Copetineros De Cristal Italiano Tallado Transparente,1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU472007630,Candy Box De Cristal Italiano Crcrystal24%pbo Tallado A Mano Incoloro,600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798660286,"Antigua Bandeja Victoriana Siglo 19, Plata Sellada Wm Rogers Plata",50,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU798414682,Abrecartas Espadín Toledano Típico Auténtico Dorado,600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU471634131,Óleo Original Finamente Enmarcado 61 X 50 (hay 2 Dif X 8mil),4000,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU788029936,"Maletín De Cuero Genuino, Muy Antiguo (1890), Para Caballero Marrón Cuero Genuino",1200,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU819629304,"Potiche Canadiense Sellado Con Tallado Precolombino 6,5 X 9",420,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU444131782,Plato Pintado A Mano Pieza Única Firmada Del Atelier Barros Negro Plata,500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU684690140,Caja De Madera Exclusiva Pintada Y Texturada A Mano,500,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU824566722,Antiquísimo Tablero De Ajedrez/damas Importado Y Sus Piezas,600,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU787832428,"Juego De Té De Plata Sellada Oriental, Antiguo, Muy Decorado Plateado",52,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU652811955,Antiguo Abanico Negro Con Puntillas De Principios De 1900 Negro Con Paisaje Y Puntillas,800,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU788003220,Antiguos Salero Y Pimentero Clásicos Chinos De Marfil Marfil,60,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU788006580,Palillero Porta Escarbadientes Muy Antiguo De Marfil Marítimo Marfil,20,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU873205110,"Antigua Toalla De Tocador (o Mantel) De Hilo, Bordada A Mano",750,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU654187773,Curso De Portugués En Videos: Conhecendo O Brasil (9 Videos),400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU652799945,Antiguo Alhajero Joyero Bañado En Plata Con Motivos Florales Plata,50,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU819602580,"Platito De Colección Pintado A Mano, Sellado Oro De Ley Azul Oscuro Sevilla",400,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU451744494,London París: Antigua Libreta Con Listado De Prendas A Lavar,450,baja_detectada
+2026-03-10T21:27:53.209968+00:00,65472902,MLU819785638,Antigua Lámpara A Mecha Y Aceite Grey Poupom De Colección,40,baja_detectada

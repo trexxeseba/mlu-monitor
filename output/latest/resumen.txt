@@ -1,24 +1,24 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-10 09:41 UTC
-Run ID:      run_1773135369397
+Fecha/hora:  2026-03-10 21:27 UTC
+Run ID:      run_1773177763783
 
 Sellers procesados OK:          14
 Sellers fallidos (excluidos):   1
 Sellers con solo 1 snapshot:    5 (sin comparación aún)
-Total items actuales:           220
+Total items actuales:           221
 
-Bajas nuevas detectadas:        432
+Bajas nuevas detectadas:        292
 Reaparecidos:                   0
 
 SELLERS FALLIDOS — excluidos de detección de bajas:
-  SKIP  seller 6470403  motivo: JSON parse: Bad escaped character in JSON at position 28179
+  SKIP  seller 6470403  motivo: JSON parse: Bad escaped character in JSON at position 28174
 
 SELLERS CON 1 SOLO SNAPSHOT — esperando próximo run:
-  WAIT  seller 74533587
-  WAIT  seller 101941840
   WAIT  seller 792978463
-  WAIT  seller 224996484
   WAIT  seller 278811319
+  WAIT  seller 224996484
+  WAIT  seller 101941840
+  WAIT  seller 74533587
 
 Estado monitor.js:        OK (monitor_status.csv presente)
 Estado detector_bajas.py: OK
