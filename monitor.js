@@ -89,13 +89,35 @@ async function getActiveSellers() {
 }
 
 async function saveSnapshot(sellerId, items) {
+  // Verificar si ya existe este run para este seller (idempotente)
+  const { data: existing } = await supabase
+    .from('snapshots').select('id')
+    .eq('seller_id', String(sellerId)).eq('run_id', RUN_ID).limit(1);
+  if (existing && existing.length > 0) {
+    console.log(`  Ya existe snapshot para ${sellerId} en ${RUN_ID}, saltando`);
+    return items.length;
+  }
+
   const rows = items.map(item => ({
     seller_id: String(sellerId), meli_item_id: item.id, item_id: item.id,
     title: item.title, price: item.price, sold_quantity: 0, available_quantity: 1,
     status: 'active', run_id: RUN_ID, checked_at: CHECKED_AT, timestamp: CHECKED_AT,
   }));
-  const { error } = await supabase.from('snapshots').upsert(rows, { onConflict: 'meli_item_id,run_id' });
-  if (error) throw new Error(`saveSnapshot: ${error.message}`);
+
+  const { error } = await supabase.from('snapshots').insert(rows);
+  if (error) {
+    if (error.message.includes('duplicate key')) {
+      // Insertar uno a uno saltando duplicados
+      let inserted = 0;
+      for (const row of rows) {
+        const { error: e2 } = await supabase.from('snapshots').insert([row]);
+        if (!e2) inserted++;
+      }
+      console.log(`  Insertados ${inserted}/${rows.length} (algunos ya existian)`);
+      return inserted;
+    }
+    throw new Error(`saveSnapshot: ${error.message}`);
+  }
   return rows.length;
 }
 
