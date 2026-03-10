@@ -1,14 +1,17 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-10 00:10 UTC
-Run ID:      run_1773101335075
+Fecha/hora:  2026-03-10 00:18 UTC
+Run ID:      run_1773101843424
 
-Sellers procesados OK:          5
-Sellers fallidos (excluidos):   0
+Sellers procesados OK:          4
+Sellers fallidos (excluidos):   1
 Sellers con solo 1 snapshot:    0 (sin comparación aún)
-Total items actuales:           240
+Total items actuales:           192
 
-Bajas nuevas detectadas:        10
+Bajas nuevas detectadas:        9
 Reaparecidos:                   0
+
+SELLERS FALLIDOS — excluidos de detección de bajas:
+  SKIP  seller 65472902  motivo: Scrapfly HTTP 429
 
 Estado monitor.js:        OK (monitor_status.csv presente)
 Estado detector_bajas.py: OK
