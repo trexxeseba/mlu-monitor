@@ -1,21 +1,33 @@
 MLU Monitor — Resumen de ejecución
-Fecha/hora:  2026-03-10 00:20 UTC
-Run ID:      run_1773102002158
+Fecha/hora:  2026-03-10 00:44 UTC
+Run ID:      run_1773103110112
 
-Sellers procesados OK:          0
-Sellers fallidos (excluidos):   5
-Sellers con solo 1 snapshot:    0 (sin comparación aún)
-Total items actuales:           0
+Sellers procesados OK:          14
+Sellers fallidos (excluidos):   1
+Sellers con solo 1 snapshot:    14 (sin comparación aún)
+Total items actuales:           640
 
 Bajas nuevas detectadas:        0
 Reaparecidos:                   0
 
 SELLERS FALLIDOS — excluidos de detección de bajas:
-  SKIP  seller 42794274  motivo: Scrapfly HTTP 429
-  SKIP  seller 82819150  motivo: Scrapfly HTTP 429
-  SKIP  seller 191098554  motivo: Scrapfly HTTP 429
-  SKIP  seller 440298103  motivo: Scrapfly HTTP 429
-  SKIP  seller 65472902  motivo: Scrapfly HTTP 429
+  SKIP  seller 6470403  motivo: JSON parse: Bad escaped character in JSON at position 28284
+
+SELLERS CON 1 SOLO SNAPSHOT — esperando próximo run:
+  WAIT  seller 165896717
+  WAIT  seller 101941840
+  WAIT  seller 792978463
+  WAIT  seller 224996484
+  WAIT  seller 278811319
+  WAIT  seller 81598742
+  WAIT  seller 65472902
+  WAIT  seller 42794274
+  WAIT  seller 82819150
+  WAIT  seller 191098554
+  WAIT  seller 65437681
+  WAIT  seller 74533587
+  WAIT  seller 440298103
+  WAIT  seller 30727726
 
 Estado monitor.js:        OK (monitor_status.csv presente)
 Estado detector_bajas.py: OK
