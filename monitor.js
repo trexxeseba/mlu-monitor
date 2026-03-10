@@ -94,7 +94,7 @@ async function saveSnapshot(sellerId, items) {
     title: item.title, price: item.price, sold_quantity: 0, available_quantity: 1,
     status: 'active', run_id: RUN_ID, checked_at: CHECKED_AT, timestamp: CHECKED_AT,
   }));
-  const { error } = await supabase.from('snapshots').insert(rows);
+  const { error } = await supabase.from('snapshots').upsert(rows, { onConflict: 'meli_item_id', ignoreDuplicates: false });
   if (error) throw new Error(`saveSnapshot: ${error.message}`);
   return rows.length;
 }
