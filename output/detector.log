@@ -1,0 +1,16 @@
+
+══════════════════════════════════════════════════════════════════════
+🔍 DETECTOR DE BAJAS - MEJORADO
+══════════════════════════════════════════════════════════════════════
+
+📊 Obteniendo snapshots para comparación...
+Traceback (most recent call last):
+  File "/home/runner/work/mlu-monitor/mlu-monitor/detector_bajas.py", line 234, in <module>
+    main()
+  File "/home/runner/work/mlu-monitor/mlu-monitor/detector_bajas.py", line 191, in main
+    items_snapshots = get_snapshots_for_comparison()
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/mlu-monitor/mlu-monitor/detector_bajas.py", line 27, in get_snapshots_for_comparison
+    response = supabase.table('snapshots').select('*').order('checked_at', ascending=False).limit(2000).execute()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BaseSelectRequestBuilder.order() got an unexpected keyword argument 'ascending'
