@@ -3,8 +3,11 @@
 ## Resumen del sistema
 
 Sistema de monitoreo de competidores en Mercado Libre Uruguay.
-Detecta ventas, cambios de precio, variaciones de stock y aparición/desaparición de items,
+Detecta aparición y desaparición de publicaciones por seller,
 minimizando falsos positivos mediante validación de integridad de cada run antes de detectar.
+
+**Alcance actual**: el monitor extrae únicamente los item_ids presentes en el listado de cada seller.
+No consulta precio, stock ni status vía API externa.
 
 ---
 
@@ -13,12 +16,11 @@ minimizando falsos positivos mediante validación de integridad de cada run ante
 | Componente   | Tecnología                       |
 |--------------|----------------------------------|
 | Scraping     | Scrapfly API (render_js, asp)    |
-| Item details | MeLi API pública (`api.mercadolibre.com`) |
 | Base de datos| Supabase (PostgreSQL)            |
 | Orquestación | GitHub Actions                   |
 | Monitor      | Node.js 20 (`src/monitor.js`)    |
 | Validación   | Node.js 20 (`src/validate_run.js`) |
-| Detección    | Python 3.11 (`src/detector_bajas.py`) |
+| Detección    | Node.js 20 (`src/detector_bajas.js`)  |
 
 ---
 
@@ -35,19 +37,19 @@ Sellers a monitorear. Cada fila = un competidor.
 | activo       | BOOLEAN | Si está activo en el monitor     |
 
 ### `snapshots`
-Un snapshot por item por run. Crecimiento esperado: N_sellers × avg_items × runs_por_dia.
+Un snapshot por item por run. Contiene solo los item_ids extraídos del listado.
 
-| Campo              | Tipo        | Descripción                        |
-|--------------------|-------------|------------------------------------|
-| run_id             | TEXT        | Qué run generó este snapshot       |
-| seller_id          | TEXT        | A qué seller pertenece             |
-| item_id            | TEXT        | ID del item MLU                    |
-| meli_item_id       | TEXT        | Mismo que item_id (legado)         |
-| price              | NUMERIC     | Precio al momento del snapshot     |
-| available_quantity | INTEGER     | Stock disponible                   |
-| sold_quantity      | INTEGER     | Acumulado de unidades vendidas     |
-| status             | TEXT        | active / paused / closed           |
-| checked_at         | TIMESTAMPTZ | Momento del snapshot               |
+| Campo        | Tipo        | Descripción                        |
+|--------------|-------------|------------------------------------|
+| run_id       | TEXT        | Qué run generó este snapshot       |
+| seller_id    | INTEGER     | A qué seller pertenece             |
+| item_id      | TEXT        | ID del item MLU                    |
+| meli_item_id | TEXT        | Mismo que item_id                  |
+| checked_at   | TIMESTAMPTZ | Momento del snapshot               |
+| timestamp    | TIMESTAMPTZ | Alias de checked_at                |
+
+Columnas presentes en tabla pero no pobladas por el monitor actual:
+`title`, `price`, `sold_quantity`, `available_quantity`, `status`, `url`, `thumbnail`
 
 ### `monitor_runs`
 Un registro por ejecución del monitor. Permite al detector saber qué runs son confiables.
@@ -60,7 +62,7 @@ Un registro por ejecución del monitor. Permite al detector saber qué runs son 
 | sellers_total      | INTEGER     | Sellers procesados                       |
 | sellers_ok         | INTEGER     | Sellers con scraping exitoso             |
 | sellers_failed     | INTEGER     | Sellers que fallaron                     |
-| total_items        | INTEGER     | Total de items guardados en este run     |
+| total_items        | INTEGER     | Total de item_ids guardados en este run  |
 | prev_valid_run_id  | TEXT        | Run válido anterior (referencia)         |
 | prev_total_items   | INTEGER     | Items del run válido anterior            |
 | items_delta_pct    | NUMERIC     | Δ% de items (positivo = cayó)            |
@@ -69,27 +71,24 @@ Un registro por ejecución del monitor. Permite al detector saber qué runs son 
 ### `bajas_detectadas`
 Cambios detectados por el detector. Cada fila = un evento de cambio.
 
-| Campo              | Tipo        | Descripción                              |
-|--------------------|-------------|------------------------------------------|
-| seller_id          | TEXT        | Seller involucrado                       |
-| item_id            | TEXT        | Item involucrado                         |
-| tipo               | TEXT        | Tipo de cambio (ver tabla abajo)         |
-| detection_run_id   | TEXT        | Run actual donde se detectó              |
-| fecha_deteccion    | TIMESTAMPTZ | Cuándo se detectó                        |
+| Campo            | Tipo        | Descripción                              |
+|------------------|-------------|------------------------------------------|
+| seller_id        | INTEGER     | Seller involucrado (NOT NULL)            |
+| item_id          | TEXT        | Item involucrado                         |
+| meli_item_id     | TEXT        | Alias de item_id                         |
+| tipo             | TEXT        | Tipo de cambio (ver tabla abajo)         |
+| run_id           | TEXT        | Run donde se detectó                     |
+| fecha_deteccion  | TIMESTAMPTZ | Cuándo se detectó                        |
 
 ---
 
 ## Tipos de cambio
 
-| Tipo                      | Condición                                                    |
-|---------------------------|--------------------------------------------------------------|
-| `nuevo`                   | Item aparece en run actual pero no en el anterior            |
-| `desaparecido_no_confirmado` | Item estaba y ya no aparece (puede ser venta, pausa, cierre) |
-| `vendido_confirmado`      | `sold_quantity` aumentó (señal más fuerte — fin de análisis para ese item) |
-| `vendido_probable`        | `available_quantity` bajó y el item sigue `active`           |
-| `status_cambio`           | Cambió el campo `status` (e.g., active → paused)             |
-| `precio_cambio`           | Precio cambió ≥ 5%                                           |
-| `stock_cambio`            | `available_quantity` cambió sin venta confirmada ni probable |
+| Tipo                         | Condición                                                         |
+|------------------------------|-------------------------------------------------------------------|
+| `nuevo`                      | Item aparece en run actual pero no en el anterior (primer avistamiento) |
+| `desaparecido_no_confirmado` | Item estaba en el anterior y ya no aparece en el actual           |
+| `reaparecido`                | Item vuelve a aparecer habiendo sido registrado como desaparecido |
 
 ---
 
@@ -101,34 +100,33 @@ GitHub Actions (workflow_dispatch o cron cada 4h)
     ▼
 1. src/monitor.js
    ├── getActiveSellers()           ← tabla sellers
-   ├── getLastValidRun()            ← tabla monitor_runs
+   ├── getLastValidRun()            ← tabla monitor_runs (fallback: execution_logs)
    ├── Para cada seller:
-   │   ├── scrapeSellerIds()        ← Scrapfly API
+   │   ├── scrapeSellerIds()        ← Scrapfly API (render_js, asp, country=uy)
    │   ├── Baseline check vs run válido anterior
-   │   ├── fetchItemDetail() × N   ← MeLi API (sin límite)
-   │   └── saveSnapshots()         ← tabla snapshots
+   │   └── saveSnapshots(itemIds)   ← tabla snapshots (solo item_ids)
    ├── Validación del run:
    │   ├── ¿Más del 30% sellers fallaron?   → status = invalid
    │   └── ¿Items cayeron más del 40%?      → status = invalid
-   └── upsertRun()                 ← tabla monitor_runs
+   └── upsertRun()                 ← tabla monitor_runs (fallback: execution_logs)
        │
        ├── Exit 0 (siempre, salvo FATAL)
        │
     ▼
 2. src/validate_run.js
-   ├── Lee el run más reciente de monitor_runs
+   ├── Lee el run más reciente de monitor_runs (fallback: execution_logs)
    ├── Exit 0  → run válido, continuar
    ├── Exit 1  → error técnico (tabla no existe, DB caída)
    └── Exit 2  → run inválido → detector NO corre
        │
        └─ (si exit 0) ──────────────────────────┐
                                                  ▼
-                                    3. src/detector_bajas.py
+                                    3. src/detector_bajas.js
                                        ├── get_last_two_valid_runs()
-                                       ├── get_snapshots_for_run(current)
-                                       ├── get_snapshots_for_run(previous)
-                                       ├── detect_changes()
-                                       └── guardar_cambios()  ← bajas_detectadas
+                                       ├── get_item_ids_for_run(current)
+                                       ├── get_item_ids_for_run(previous)
+                                       ├── detect_changes()     ← set difference
+                                       └── guardar_cambios()    ← bajas_detectadas
 ```
 
 ---
@@ -159,6 +157,6 @@ Ver `GITHUB_SECRETS_SETUP.md` para instrucciones de configuración.
 ## Consideraciones de escala
 
 - **Scrapfly**: cada seller = 1 request de scraping. Con render_js activo, consumo ~5-10 créditos/request.
-- **MeLi API**: 1 request por item. Sin auth = rate limit público (~1 req/seg implícito).
-- **Supabase**: cada run inserta N_sellers × avg_items filas en snapshots. Monitorear tamaño de tabla y considerar purge de runs viejos (>30 días).
+- **Sin API de MeLi**: el monitor no hace requests a MeLi por item — sin rate limiting ni riesgo de bloqueo de esa fuente.
+- **Supabase**: cada run inserta N_sellers × avg_items filas en snapshots (solo item_ids). Monitorear tamaño de tabla y considerar purge de runs viejos (>30 días).
 - **Cron cada 4h**: 6 runs/día. Ajustar según consumo de créditos Scrapfly.

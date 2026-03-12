@@ -1,234 +1,378 @@
-import os
-import json
-from datetime import datetime
-from supabase import create_client
+"""
+detector_bajas.py
 
-# ─── Configuración ─────────────────────────────────────────────────────────
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+Compara el último run válido contra el run válido anterior.
+Solo trabaja con item_ids extraídos del listado — sin dependencia de price,
+stock ni sold_quantity.
+
+Clasificaciones de cambio:
+  nuevo                   → item aparece en run actual pero no en el anterior
+  desaparecido_no_confirmado → item estaba y ya no aparece
+  reaparecido             → item vuelve a aparecer tras haber sido registrado
+                             como desaparecido_no_confirmado en bajas_detectadas
+
+Salida:
+  0 → detector completó (aunque no haya cambios)
+  1 → error técnico o insuficientes runs válidos
+"""
+
+import json
+import os
+import sys
+import urllib.request
+import urllib.parse
+from datetime import datetime
+
+# ─── Config ────────────────────────────────────────────────────────────────────
+SUPABASE_URL = os.getenv('SUPABASE_URL', '').rstrip('/')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    print("❌ FATAL: Faltan SUPABASE_URL o SUPABASE_KEY")
-    exit(1)
+    print('❌ FATAL: Faltan SUPABASE_URL o SUPABASE_KEY')
+    sys.exit(1)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+REST_URL = f'{SUPABASE_URL}/rest/v1'
+HEADERS = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': f'Bearer {SUPABASE_KEY}',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Prefer': 'return=representation',
+}
 
-print("\n" + "═"*70)
-print("🔍 DETECTOR DE BAJAS - MEJORADO")
-print("═"*70 + "\n")
+SEP = '═' * 70
 
-# ─── Obtener últimos 2 snapshots de cada item ──────────────────────────────
-def get_snapshots_for_comparison():
-    """
-    Obtiene últimos 2 snapshots de cada item para comparar
-    """
-    print("📊 Obteniendo snapshots para comparación...")
-    
-    response = supabase.table('snapshots').select('*').order('checked_at', ascending=False).limit(2000).execute()
-    
-    if not response.data:
-        print("⚠️  No hay snapshots para procesar")
-        return {}
-    
-    # Agrupar por item_id y obtener últimos 2
-    items_snapshots = {}
-    for snapshot in response.data:
-        item_id = snapshot['item_id']
-        if item_id not in items_snapshots:
-            items_snapshots[item_id] = []
-        if len(items_snapshots[item_id]) < 2:
-            items_snapshots[item_id].append(snapshot)
-    
-    print(f"✅ {len(items_snapshots)} items con múltiples snapshots\n")
-    return items_snapshots
 
-# ─── Detectar cambios ──────────────────────────────────────────────────────
-def es_falso_positivo(cambio, snapshot_anterior, snapshot_nuevo):
-    """
-    Filtra cambios que probablemente NO son reales
-    """
-    
-    # Falso positivo: cambio de URL (edición del vendedor)
-    if snapshot_anterior and snapshot_nuevo:
-        if snapshot_anterior.get('url') != snapshot_nuevo.get('url'):
-            return True
-    
-    # Falso positivo: status = paused (vendedor pausó, no vendió)
-    if snapshot_nuevo and snapshot_nuevo.get('status') == 'paused':
-        return True
-    
-    # Falso positivo: cambio de precio < 5% (ruido)
-    if cambio['tipo'] == 'precio_cambio':
-        pct = cambio.get('cambio_porcentaje', 0)
-        if abs(pct) < 5:
-            return True
-    
-    # Falso positivo: sold_quantity = 0 (Mercado Libre no lo expone)
-    if cambio['tipo'] == 'vendido':
-        if snapshot_nuevo.get('sold_quantity', 0) == 0:
-            return True
-    
-    return False
+# ─── HTTP helpers ─────────────────────────────────────────────────────────────
+def _get(path, params=None):
+    url = f'{REST_URL}/{path}'
+    if params:
+        url += '?' + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers={**HEADERS, 'Prefer': 'count=exact'})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode())
 
-def detectar_cambios(snapshot_anterior, snapshot_nuevo):
-    """
-    Detecta 3 tipos de cambios: NUEVO, DESAPARECIDO, PRECIO_CAMBIO, VENDIDO
-    """
-    cambios = []
-    
-    # TIPO 1: ITEM NUEVO
-    if snapshot_anterior is None and snapshot_nuevo:
-        cambios.append({
-            'tipo': 'nuevo',
-            'item_id': snapshot_nuevo['item_id'],
-            'meli_item_id': snapshot_nuevo['meli_item_id'],
-            'seller_id': snapshot_nuevo['seller_id'],
-            'title': snapshot_nuevo['title'],
-            'precio': snapshot_nuevo['price'],
-            'status_nuevo': snapshot_nuevo.get('status'),
-            'timestamp': datetime.now().isoformat()
-        })
-    
-    # TIPO 2: ITEM DESAPARECIDO
-    if snapshot_anterior and snapshot_nuevo is None:
-        cambios.append({
-            'tipo': 'desaparecido',  # podría ser venta, pausado, o eliminado
-            'item_id': snapshot_anterior['item_id'],
-            'meli_item_id': snapshot_anterior['meli_item_id'],
-            'seller_id': snapshot_anterior['seller_id'],
-            'title': snapshot_anterior['title'],
-            'precio_ultimo': snapshot_anterior['price'],
-            'status_anterior': snapshot_anterior.get('status'),
-            'timestamp': datetime.now().isoformat()
-        })
-    
-    # TIPO 3: CAMBIO DE PRECIO
-    if snapshot_anterior and snapshot_nuevo:
-        precio_ant = snapshot_anterior.get('price', 0)
-        precio_nuevo = snapshot_nuevo.get('price', 0)
-        
-        if precio_ant > 0 and abs(precio_nuevo - precio_ant) > 100:
-            cambio_pct = ((precio_nuevo / precio_ant) - 1) * 100
-            cambios.append({
-                'tipo': 'precio_cambio',
-                'item_id': snapshot_nuevo['item_id'],
-                'meli_item_id': snapshot_nuevo['meli_item_id'],
-                'seller_id': snapshot_nuevo['seller_id'],
-                'title': snapshot_nuevo['title'],
-                'precio_anterior': precio_ant,
-                'precio_nuevo': precio_nuevo,
-                'cambio_porcentaje': round(cambio_pct, 2),
-                'timestamp': datetime.now().isoformat()
-            })
-    
-    # TIPO 4: ITEM VENDIDO
-    if snapshot_anterior and snapshot_nuevo:
-        sold_ant = snapshot_anterior.get('sold_quantity', 0)
-        sold_nuevo = snapshot_nuevo.get('sold_quantity', 0)
-        
-        if sold_nuevo > sold_ant and sold_nuevo > 0:
-            cambios.append({
-                'tipo': 'vendido',
-                'item_id': snapshot_nuevo['item_id'],
-                'meli_item_id': snapshot_nuevo['meli_item_id'],
-                'seller_id': snapshot_nuevo['seller_id'],
-                'title': snapshot_nuevo['title'],
-                'unidades_vendidas': sold_nuevo - sold_ant,
-                'precio': snapshot_nuevo['price'],
-                'timestamp': datetime.now().isoformat()
-            })
-    
-    # Filtrar falsos positivos
-    cambios_validos = []
-    for cambio in cambios:
-        if not es_falso_positivo(cambio, snapshot_anterior, snapshot_nuevo):
-            cambios_validos.append(cambio)
-        else:
-            print(f"  🚫 Falso positivo filtrado: {cambio['tipo']} - {cambio['title'][:40]}")
-    
-    return cambios_validos
 
-# ─── Guardar cambios en bajas_detectadas ───────────────────────────────────
-def guardar_cambios(cambios):
-    """
-    Guarda cambios en tabla bajas_detectadas
-    """
-    if not cambios:
-        print("⚠️  No hay cambios válidos para guardar")
-        return 0
-    
-    print(f"\n💾 Guardando {len(cambios)} cambios...")
-    
-    rows_a_insertar = []
-    for cambio in cambios:
-        row = {
-            'seller_id': cambio['seller_id'],
-            'item_id': cambio['item_id'],
-            'meli_item_id': cambio.get('meli_item_id'),
-            'title': cambio['title'],
-            'tipo': cambio['tipo'],
-            'precio_anterior': cambio.get('precio_anterior'),
-            'precio_nuevo': cambio.get('precio_nuevo'),
-            'cambio_porcentaje': cambio.get('cambio_porcentaje'),
-            'status_anterior': cambio.get('status_anterior'),
-            'status_nuevo': cambio.get('status_nuevo'),
-            'unidades_vendidas': cambio.get('unidades_vendidas'),
-            'fecha_deteccion': cambio['timestamp'],
-        }
-        rows_a_insertar.append(row)
-    
-    # Intentar insertar
+def _post(path, body):
+    data = json.dumps(body).encode()
+    req = urllib.request.Request(
+        f'{REST_URL}/{path}',
+        data=data,
+        headers={**HEADERS},
+        method='POST',
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode())
+
+
+def _select(table, params):
+    """Build a GET request with PostgREST query params."""
+    url = f'{REST_URL}/{table}?' + urllib.parse.urlencode(params, doseq=True)
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode())
+
+
+# ─── Obtener los 2 últimos runs válidos ────────────────────────────────────────
+def get_last_two_valid_runs():
+    """Intenta monitor_runs; fallback a los 2 run_id más recientes de snapshots."""
+    print('📊 Consultando últimos 2 runs válidos...')
+
+    # Intento 1: monitor_runs
     try:
-        response = supabase.table('bajas_detectadas').insert(rows_a_insertar).execute()
-        print(f"✅ {len(rows_a_insertar)} cambios guardados")
-        return len(rows_a_insertar)
+        data = _select('monitor_runs', {
+            'status': 'eq.valid',
+            'order': 'finished_at.desc',
+            'limit': 2,
+        })
+        if len(data) >= 2:
+            current, previous = data[0], data[1]
+            print(f'  [monitor_runs] Run actual:   {current["run_id"]}')
+            print(f'  [monitor_runs] Run anterior: {previous["run_id"]}')
+            return current, previous
+        elif len(data) == 1:
+            print('⚠️  Solo 1 run válido en monitor_runs — insuficiente para comparar')
     except Exception as e:
-        print(f"❌ Error insertando: {str(e)}")
+        print(f'  ⚠️  monitor_runs no disponible: {e} → fallback a snapshots')
+
+    # Intento 2: execution_logs (status = 'success')
+    try:
+        data2 = _select('execution_logs', {
+            'status': 'eq.success',
+            'order': 'executed_at.desc',
+            'limit': 2,
+        })
+        if len(data2) >= 2:
+            def to_run(row):
+                return {'run_id': row['run_id'], 'total_items': row.get('items_processed', '?'), 'finished_at': row.get('executed_at', row['run_id'])}
+            current, previous = to_run(data2[0]), to_run(data2[1])
+            print(f'  [execution_logs] Run actual:   {current["run_id"]}')
+            print(f'  [execution_logs] Run anterior: {previous["run_id"]}')
+            return current, previous
+    except Exception as e:
+        print(f'  ⚠️  execution_logs no disponible: {e} → fallback a snapshots')
+
+    # Intento 3 (fallback): los 2 run_id más recientes de snapshots
+    print('  Fallback: buscando 2 run_ids distintos en snapshots...')
+    try:
+        data3 = _select('snapshots', {
+            'select': 'run_id,checked_at',
+            'order': 'checked_at.desc',
+            'limit': 5000,
+        })
+        seen = []
+        for row in data3:
+            rid = row.get('run_id')
+            if rid and rid not in seen:
+                seen.append(rid)
+            if len(seen) >= 2:
+                break
+        if len(seen) < 2:
+            print(f'⚠️  Solo {len(seen)} run_id(s) en snapshots — insuficiente para comparar')
+            return None, None
+
+        def run_obj(run_id):
+            return {'run_id': run_id, 'total_items': '?', 'finished_at': run_id}
+
+        current  = run_obj(seen[0])
+        previous = run_obj(seen[1])
+        print(f'  [snapshots fallback] Run actual:   {current["run_id"]}')
+        print(f'  [snapshots fallback] Run anterior: {previous["run_id"]}')
+        return current, previous
+    except Exception as e2:
+        print(f'❌ No se pudo obtener runs de snapshots: {e2}')
+        return None, None
+
+
+# ─── Obtener set de item_ids para un run ──────────────────────────────────────
+def get_item_ids_for_run(run_id):
+    """Retorna {item_id: seller_id} para todos los items del run dado."""
+    all_data = []
+    page_size = 1000
+    offset = 0
+    while True:
+        batch = _select('snapshots', {
+            'select': 'item_id,meli_item_id,seller_id',
+            'run_id': f'eq.{run_id}',
+            'limit': page_size,
+            'offset': offset,
+        })
+        all_data.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
+
+    items = {}
+    for snap in all_data:
+        iid = snap.get('item_id') or snap.get('meli_item_id')
+        if iid and iid not in items:
+            items[iid] = snap.get('seller_id')
+    return items
+
+
+# ─── Obtener item_ids que fueron desaparecidos (para detectar reaparecidos) ───
+def get_previously_disappeared(item_ids):
+    if not item_ids:
+        return set()
+    try:
+        ids_str = ','.join(str(i) for i in item_ids)
+        data = _select('bajas_detectadas', {
+            'select': 'item_id',
+            'tipo': 'eq.desaparecido_no_confirmado',
+            'item_id': f'in.({ids_str})',
+        })
+        return {row['item_id'] for row in data}
+    except Exception as e:
+        print(f'  ⚠️  No se pudo consultar reaparecidos: {e}')
+        return set()
+
+
+# ─── Obtener item_ids que ya fueron registrados en bajas_detectadas ───────────
+def get_previously_registered(item_ids):
+    """Items que ya aparecieron en algún ciclo anterior (cualquier tipo)."""
+    if not item_ids:
+        return set()
+    try:
+        ids_str = ','.join(str(i) for i in item_ids)
+        data = _select('bajas_detectadas', {
+            'select': 'item_id',
+            'item_id': f'in.({ids_str})',
+        })
+        return {row['item_id'] for row in data}
+    except Exception as e:
+        print(f'  ⚠️  No se pudo consultar items registrados: {e}')
+        return set()
+
+
+# ─── Verificar si ya se detectó para este run (evitar duplicados) ──────────────
+def already_detected(current_run_id):
+    try:
+        data = _select('bajas_detectadas', {
+            'select': 'id',
+            'run_id': f'eq.{current_run_id}',
+            'limit': 1,
+        })
+        return len(data) > 0
+    except Exception:
+        return False
+
+
+# ─── Comparar dos sets de item_ids y clasificar cambios ──────────────────────
+def detect_changes(current_items, previous_items, current_run_id):
+    cambios = []
+    now = datetime.now().isoformat()
+
+    current_ids  = set(current_items.keys())
+    previous_ids = set(previous_items.keys())
+
+    # Items nuevos o reaparecidos
+    nuevos_ids = current_ids - previous_ids
+    prev_disappeared = get_previously_disappeared(nuevos_ids)
+
+    for iid in nuevos_ids:
+        seller_id = current_items[iid]
+        tipo = 'reaparecido' if iid in prev_disappeared else 'nuevo'
+        cambios.append({
+            'tipo':            tipo,
+            'item_id':         iid,
+            'meli_item_id':    iid,
+            'seller_id':       seller_id,
+            'run_id':          current_run_id,
+            'fecha_deteccion': now,
+        })
+
+    # Items desaparecidos
+    for iid in previous_ids - current_ids:
+        seller_id = previous_items[iid]
+        cambios.append({
+            'tipo':            'desaparecido_no_confirmado',
+            'item_id':         iid,
+            'meli_item_id':    iid,
+            'seller_id':       seller_id,
+            'run_id':          current_run_id,
+            'fecha_deteccion': now,
+        })
+
+    return cambios
+
+
+# ─── Guardar cambios en bajas_detectadas ──────────────────────────────────────
+def guardar_cambios(cambios):
+    if not cambios:
+        print('ℹ️  Sin cambios para guardar')
         return 0
 
-# ─── Main ──────────────────────────────────────────────────────────────────
+    print(f'\n💾 Insertando {len(cambios)} cambios en bajas_detectadas...')
+
+    rows = []
+    for c in cambios:
+        rows.append({
+            'seller_id':       c.get('seller_id'),
+            'item_id':         c.get('item_id'),
+            'meli_item_id':    c.get('meli_item_id'),
+            'tipo':            c.get('tipo'),
+            'run_id':          c.get('run_id'),
+            'fecha_deteccion': c.get('fecha_deteccion'),
+        })
+
+    # Bulk insert
+    data = json.dumps(rows).encode()
+    req = urllib.request.Request(
+        f'{REST_URL}/bajas_detectadas',
+        data=data,
+        headers={**HEADERS, 'Prefer': 'return=minimal'},
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            pass
+        print(f'✅ {len(rows)} cambios guardados')
+        return len(rows)
+    except Exception as e:
+        print(f'⚠️  Bulk insert falló ({e}), intentando de a uno...')
+        ok = 0
+        for row in rows:
+            data2 = json.dumps([row]).encode()
+            req2 = urllib.request.Request(
+                f'{REST_URL}/bajas_detectadas',
+                data=data2,
+                headers={**HEADERS, 'Prefer': 'return=minimal'},
+                method='POST',
+            )
+            try:
+                with urllib.request.urlopen(req2, timeout=30) as _:
+                    ok += 1
+            except Exception as e2:
+                print(f'  ❌ {row.get("item_id")} [{row.get("tipo")}]: {e2}')
+        return ok
+
+
+# ─── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    items_snapshots = get_snapshots_for_comparison()
-    
-    if not items_snapshots:
-        print("❌ No hay datos para procesar")
-        return
-    
-    cambios_totales = []
-    cambios_por_tipo = {}
-    
-    for item_id, snapshots in items_snapshots.items():
-        if len(snapshots) >= 2:
-            # Comparar último vs penúltimo
-            snapshot_nuevo = snapshots[0]
-            snapshot_anterior = snapshots[1]
-            
-            cambios = detectar_cambios(snapshot_anterior, snapshot_nuevo)
-            
-            for cambio in cambios:
-                cambios_totales.append(cambio)
-                tipo = cambio['tipo']
-                cambios_por_tipo[tipo] = cambios_por_tipo.get(tipo, 0) + 1
-                print(f"  ✓ {tipo}: {cambio['title'][:40]}")
-    
-    # Guardar todos los cambios
-    print(f"\n{'═'*70}")
-    print("📈 RESUMEN DE CAMBIOS DETECTADOS")
-    print(f"{'═'*70}\n")
-    
-    for tipo, count in cambios_por_tipo.items():
-        print(f"  {tipo:20}: {count:3} cambios")
-    
-    print(f"\n  TOTAL: {len(cambios_totales)} cambios\n")
-    
-    insertados = guardar_cambios(cambios_totales)
-    
-    print(f"\n{'═'*70}")
-    if insertados > 0:
-        print(f"✅ DETECTOR COMPLETADO: {insertados} cambios guardados")
+    print(f'\n{SEP}')
+    print('DETECTOR DE CAMBIOS MLU — INICIO')
+    print(f'Ejecutado: {datetime.now().isoformat()}')
+    print(f'{SEP}\n')
+
+    current_run, previous_run = get_last_two_valid_runs()
+
+    if not current_run or not previous_run:
+        print('ℹ️  Sin suficientes runs válidos para comparar — saliendo sin error')
+        sys.exit(0)
+
+    current_run_id  = current_run['run_id']
+    previous_run_id = previous_run['run_id']
+
+    # Evitar duplicados por misma corrida
+    if already_detected(current_run_id):
+        print(f'⚠️  Ya se detectaron cambios para {current_run_id} — saltando')
+        sys.exit(0)
+
+    # Cargar item_ids
+    print(f'\n📥 Item IDs del run actual ({current_run_id})...')
+    current_items = get_item_ids_for_run(current_run_id)
+    print(f'   {len(current_items)} items únicos')
+
+    print(f'\n📥 Item IDs del run anterior ({previous_run_id})...')
+    previous_items = get_item_ids_for_run(previous_run_id)
+    print(f'   {len(previous_items)} items únicos')
+
+    # Comparar
+    print('\n🔍 Comparando...\n')
+    cambios = detect_changes(current_items, previous_items, current_run_id)
+
+    # Resumen
+    print(f'\n{SEP}')
+    print('RESUMEN DE CAMBIOS DETECTADOS')
+    print(SEP)
+    tipos = {}
+    for c in cambios:
+        tipos[c['tipo']] = tipos.get(c['tipo'], 0) + 1
+
+    if tipos:
+        for tipo in sorted(tipos):
+            print(f'  {tipo:35}: {tipos[tipo]:4}')
+        print(f'  {"TOTAL":35}: {len(cambios):4}')
     else:
-        print(f"⚠️  DETECTOR COMPLETADO: Sin cambios nuevos")
-    print(f"{'═'*70}\n")
+        print('  Sin cambios detectados entre los dos runs')
+
+    print(SEP)
+
+    # Detalle (primeros 30)
+    if cambios:
+        print('\nDetalle (primeros 30):')
+        for c in cambios[:30]:
+            print(f'  [{c["tipo"]}] {c["item_id"]} (seller: {c.get("seller_id")})')
+        if len(cambios) > 30:
+            print(f'  ... y {len(cambios) - 30} más')
+
+    # Guardar
+    insertados = guardar_cambios(cambios)
+
+    print(f'\n{SEP}')
+    print(f'✅ DETECTOR COMPLETADO — {insertados} cambios guardados')
+    print(f'{SEP}\n')
+
 
 if __name__ == '__main__':
     main()

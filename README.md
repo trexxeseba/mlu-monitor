@@ -1,8 +1,11 @@
 # MLU Monitor v2.0
 
-Monitor robusto de competidores en **Mercado Libre Uruguay**.
-Detecta ventas, cambios de precio, variaciones de stock y desaparición de items,
+Monitor de competidores en **Mercado Libre Uruguay**.
+Detecta aparición, desaparición y reaparición de publicaciones por seller,
 con validación de integridad de cada run para minimizar falsos positivos.
+
+> **Alcance**: el monitor extrae únicamente item_ids del listado de cada seller vía Scrapfly.
+> No depende de la API de MeLi.
 
 ---
 
@@ -11,9 +14,9 @@ con validación de integridad de cada run para minimizar falsos positivos.
 ```
 GitHub Actions (manual o cron cada 4h)
     │
-    ├─ 1. src/monitor.js       → Scrapea sellers, guarda snapshots en Supabase
-    ├─ 2. src/validate_run.js  → Verifica que el run no esté roto
-    └─ 3. src/detector_bajas.py → Compara run válido actual vs anterior
+    ├─ 1. src/monitor.js        → Scrapea sellers, guarda snapshots en Supabase
+    ├─ 2. src/validate_run.js   → Verifica que el run no esté roto
+    └─ 3. src/detector_bajas.js → Compara run válido actual vs anterior
                                    Guarda cambios en bajas_detectadas
 ```
 
@@ -41,15 +44,14 @@ En Supabase → SQL Editor → pegar `docs/sql/001_monitor_runs.sql` → Run.
 
 ```bash
 npm install
-pip install -r requirements.txt
 
 export SUPABASE_URL="..."
 export SUPABASE_KEY="..."
 export SCRAPFLY_KEY="..."
 
 node src/monitor.js
-node src/validate_run.js    # debe salir con código 0
-python3 src/detector_bajas.py
+node src/validate_run.js     # debe salir con código 0
+node src/detector_bajas.js
 ```
 
 ### 4. Activar el cron (cuando ≥2 runs manuales sean exitosos)
@@ -67,22 +69,21 @@ En `.github/workflows/monitor.yml`, descomentar:
 ```bash
 npm run monitor    # node src/monitor.js
 npm run validate   # node src/validate_run.js
-npm run detector   # python3 src/detector_bajas.py
+npm run detector   # node src/detector_bajas.js
 ```
 
 ---
 
 ## Tipos de cambio detectados
 
-| Tipo                         | Descripción                                      |
-|------------------------------|--------------------------------------------------|
-| `vendido_confirmado`         | `sold_quantity` aumentó entre runs               |
-| `vendido_probable`           | `available_quantity` bajó, item sigue activo     |
-| `desaparecido_no_confirmado` | Item no aparece en el run actual                 |
-| `nuevo`                      | Item aparece por primera vez                     |
-| `precio_cambio`              | Precio cambió ≥ 5%                               |
-| `stock_cambio`               | Stock cambió sin venta confirmada                |
-| `status_cambio`              | Campo status cambió (active/paused/closed)       |
+| Tipo                         | Descripción                                                         |
+|------------------------------|---------------------------------------------------------------------|
+| `nuevo`                      | Item aparece en run actual pero no en el anterior                   |
+| `desaparecido_no_confirmado` | Item estaba en el anterior y ya no aparece en el actual             |
+| `reaparecido`                | Item vuelve a aparecer habiendo sido registrado como desaparecido   |
+
+> El monitor extrae únicamente item_ids del listado scrapeado.
+> No consulta precio, stock ni status vía API de MeLi.
 
 ---
 
@@ -93,7 +94,7 @@ mlu-monitor/
 ├── src/
 │   ├── monitor.js           ← Scraper principal
 │   ├── validate_run.js      ← Validador de integridad del run
-│   └── detector_bajas.py    ← Detector de cambios
+│   └── detector_bajas.js    ← Detector de cambios
 ├── docs/
 │   ├── sql/
 │   │   └── 001_monitor_runs.sql

@@ -2,7 +2,7 @@
 
 ## Checklist inicial (primera vez)
 
-### 1. Correr la migración SQL
+### 1. Correr la migración SQL (opcional pero recomendado)
 
 En Supabase → SQL Editor:
 
@@ -10,7 +10,9 @@ En Supabase → SQL Editor:
 -- Pegar el contenido de docs/sql/001_monitor_runs.sql y ejecutar
 ```
 
-Verificar que la query final muestra las tablas `monitor_runs` y `bajas_detectadas`.
+> Si no se corre la migración, el monitor usa `execution_logs` como fallback
+> y el detector usa los run_ids de la tabla `snapshots`. El pipeline funciona
+> en ambos casos, pero la validación es más robusta con `monitor_runs`.
 
 ### 2. Configurar secrets en GitHub
 
@@ -51,7 +53,7 @@ node src/monitor.js
 
 Verificar en la salida:
 - `📋 N sellers activos`
-- `✅ X/Y snapshots guardados` por seller
+- `✅ X/Y item IDs guardados` por seller
 - `Run status: VALID` al final
 
 Si el run aparece como `INVALID`, el validate_run abortará el detector (correcto).
@@ -68,11 +70,11 @@ node src/validate_run.js
 ### Paso 3: Correr el detector (solo si validate_run exitó 0)
 
 ```bash
-python3 src/detector_bajas.py
+node src/detector_bajas.js
 ```
 
 En el primer run: solo habrá `nuevo` para todos los items.
-En el segundo run en adelante: aparecerán cambios reales.
+En el segundo run en adelante: aparecerán `desaparecido_no_confirmado`, `reaparecido` y nuevos `nuevo`.
 
 ---
 
@@ -81,7 +83,7 @@ En el segundo run en adelante: aparecerán cambios reales.
 1. Ir a: `https://github.com/trexxeseba/mlu-monitor/actions`
 2. Seleccionar workflow **"MLU Monitor Pipeline"**
 3. Click **"Run workflow"** → **"Run workflow"** (verde)
-4. Esperar a que termine (~5-15 min dependiendo de sellers e items)
+4. Esperar a que termine (~5-15 min dependiendo de sellers)
 5. Click en el run → ver logs de cada step
 6. Descargar artifact `mlu-monitor-run-N` → contiene `monitor.log`, `validate.log`, `detector.log`
 
@@ -144,14 +146,23 @@ GROUP BY tipo
 ORDER BY n DESC;
 ```
 
-### Ver ventas confirmadas recientes
+### Ver items desaparecidos recientemente
 
 ```sql
-SELECT b.seller_id, b.title, b.unidades_vendidas, b.precio_nuevo,
-       b.fecha_deteccion, b.detection_run_id
-FROM bajas_detectadas b
-WHERE b.tipo = 'vendido_confirmado'
-ORDER BY b.fecha_deteccion DESC
+SELECT seller_id, item_id, fecha_deteccion, run_id
+FROM bajas_detectadas
+WHERE tipo = 'desaparecido_no_confirmado'
+ORDER BY fecha_deteccion DESC
+LIMIT 50;
+```
+
+### Ver items reaparecidos recientemente
+
+```sql
+SELECT seller_id, item_id, fecha_deteccion, run_id
+FROM bajas_detectadas
+WHERE tipo = 'reaparecido'
+ORDER BY fecha_deteccion DESC
 LIMIT 50;
 ```
 
@@ -172,12 +183,12 @@ LIMIT 50;
 ### El detector no corre aunque el monitor termina bien
 
 - Revisar `validate.log` — puede que el run quedó en estado `running` (crash del monitor)
-- Verificar que `001_monitor_runs.sql` fue ejecutado en Supabase
+- Si no existe tabla `monitor_runs`, el fallback usa `execution_logs` — verificar que esa tabla existe
 
 ### El detector detecta miles de "nuevo" inesperadamente
 
 - Probable: los runs previos eran inválidos (no los compara) y recién hay 2 runs válidos
-- Normal en el primer uso después del refactor
+- Normal en el primer uso o después de cambios de scope
 
 ### Purge de datos viejos
 

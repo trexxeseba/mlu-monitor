@@ -78,26 +78,6 @@ async function scrapeSellerIds(sellerId) {
   return itemIds;
 }
 
-// ─── MeLi API: detalle de un item ────────────────────────────────────────────
-async function fetchItemDetail(itemId) {
-  const res = await httpGet('api.mercadolibre.com', `/items/${itemId}`);
-  if (res.status !== 200) throw new Error(`MeLi API HTTP ${res.status}`);
-  const d = JSON.parse(res.body);
-  return {
-    id:                 itemId,
-    title:              d.title              || 'Sin título',
-    price:              d.price              || 0,
-    currency:           d.currency_id        || 'UYU',
-    status:             d.status             || 'active',
-    available_quantity: d.available_quantity || 0,
-    sold_quantity:      d.sold_quantity      || 0,
-    url:                d.permalink          || '',
-    thumbnail:          d.thumbnail          || '',
-    condition:          d.condition          || '',
-    category_id:        d.category_id        || '',
-  };
-}
-
 // ─── Obtener sellers activos ──────────────────────────────────────────────────
 async function getActiveSellers() {
   const { data, error } = await supabase
@@ -129,57 +109,61 @@ async function getSellerBaseline(sellerId, validRunId) {
   if (!validRunId) return null;
   const { data, error } = await supabase
     .from('snapshots')
-    .select('meli_item_id', { count: 'exact', head: true })
+    .select('meli_item_id')
     .eq('seller_id', String(sellerId))
     .eq('run_id', validRunId);
   if (error) return null;
   return data?.length ?? null;
 }
 
-// ─── Guardar snapshots de un seller ──────────────────────────────────────────
-async function saveSnapshots(sellerId, items) {
+// ─── Guardar snapshots de un seller (solo IDs del listado) ───────────────────
+// Usa UPSERT por meli_item_id para que cada item muestre el run_id del último
+// run en que fue visto. Items no vistos en este run conservan el run_id anterior.
+async function saveSnapshots(sellerId, itemIds) {
   const checkedAt = new Date().toISOString();
-  const rows = items.map(item => ({
-    seller_id:          String(sellerId),
-    meli_item_id:       item.id,
-    item_id:            item.id,
-    title:              item.title,
-    price:              item.price,
-    currency:           item.currency,
-    status:             item.status,
-    available_quantity: item.available_quantity,
-    sold_quantity:      item.sold_quantity,
-    url:                item.url,
-    thumbnail:          item.thumbnail,
-    condition:          item.condition,
-    category_id:        item.category_id,
-    run_id:             RUN_ID,
-    checked_at:         checkedAt,
-    timestamp:          checkedAt,
+  const rows = itemIds.map(itemId => ({
+    seller_id:    String(sellerId),
+    meli_item_id: itemId,
+    item_id:      itemId,
+    run_id:       RUN_ID,
+    checked_at:   checkedAt,
+    timestamp:    checkedAt,
   }));
 
-  const { error } = await supabase.from('snapshots').insert(rows);
-  if (error) {
-    // Duplicate key → insertar de a uno
-    if (error.message?.includes('duplicate') || error.code === '23505') {
-      let inserted = 0;
-      for (const row of rows) {
-        const { error: e2 } = await supabase.from('snapshots').insert([row]);
-        if (!e2) inserted++;
-      }
-      return inserted;
-    }
-    throw new Error(`saveSnapshots: ${error.message}`);
-  }
+  const { error } = await supabase.from('snapshots').upsert(rows, { onConflict: 'meli_item_id' });
+  if (error) throw new Error(`saveSnapshots: ${error.message}`);
   return rows.length;
 }
 
-// ─── Registrar estado del run en monitor_runs ─────────────────────────────────
+// ─── Registrar estado del run ─────────────────────────────────────────────────
+// Intenta en monitor_runs; si no existe, fallback a execution_logs.
 async function upsertRun(fields) {
+  const row = { run_id: RUN_ID, ...fields };
   const { error } = await supabase
     .from('monitor_runs')
-    .upsert([{ run_id: RUN_ID, ...fields }], { onConflict: 'run_id' });
-  if (error) console.warn(`  ⚠️  monitor_runs upsert: ${error.message}`);
+    .upsert([row], { onConflict: 'run_id' });
+  if (!error) return;
+
+  // Fallback: execution_logs (tabla que ya existe)
+  const logRow = {
+    run_id:          RUN_ID,
+    executed_at:     fields.finished_at || fields.started_at || STARTED_AT,
+    items_processed: fields.total_items || 0,
+    sellers_total:   fields.sellers_total || 0,
+    sellers_success: fields.sellers_ok || 0,
+    sellers_failed:  fields.sellers_failed || 0,
+    status:          fields.status === 'valid' ? 'success'
+                   : fields.status === 'invalid' ? 'partial'
+                   : fields.status || 'running',
+    message:         fields.invalid_reason
+                     || `items:${fields.total_items || 0} sellers:${fields.sellers_total || 0}`,
+  };
+  const { error: logErr } = await supabase.from('execution_logs').upsert(
+    [logRow], { onConflict: 'run_id', ignoreDuplicates: false }
+  );
+  if (logErr) {
+    await supabase.from('execution_logs').insert([logRow]);
+  }
 }
 
 // ─── Procesar un seller ────────────────────────────────────────────────────────
@@ -191,7 +175,7 @@ async function processSeller(seller, lastValidRunId) {
   let status = 'failed', errorMessage = '', itemsFound = 0;
 
   try {
-    // 1. Obtener IDs desde el listado
+    // 1. Obtener IDs desde el listado via Scrapfly
     const itemIds = await scrapeSellerIds(sellerId);
 
     // 2. Validar contra baseline del último run válido
@@ -202,32 +186,11 @@ async function processSeller(seller, lastValidRunId) {
       );
     }
 
-    // 3. Obtener detalle de TODOS los items desde la API de MeLi (sin límite)
-    const items = [];
-    for (const itemId of itemIds) {
-      try {
-        const detail = await fetchItemDetail(itemId);
-        items.push(detail);
-      } catch (e) {
-        console.warn(`    ⚠️  ${itemId}: ${e.message}`);
-      }
-    }
+    itemsFound = itemIds.length;
 
-    if (!items.length) throw new Error('0 detalles obtenidos de la API de MeLi');
-
-    itemsFound = items.length;
-
-    // Preview de los primeros 3
-    items.slice(0, 3).forEach(i =>
-      console.log(
-        `    [${i.id}] ${i.title.substring(0, 45)} | $${i.price}` +
-        ` | stock:${i.available_quantity} | sold:${i.sold_quantity}`
-      )
-    );
-
-    // 4. Guardar snapshots
-    const saved = await saveSnapshots(sellerId, items);
-    console.log(`  ✅ ${saved}/${itemsFound} snapshots guardados`);
+    // 3. Guardar snapshots (solo item_ids del listado)
+    const saved = await saveSnapshots(sellerId, itemIds);
+    console.log(`  ✅ ${saved}/${itemsFound} item IDs guardados`);
     status = 'ok';
 
   } catch (err) {
@@ -339,7 +302,6 @@ async function processSeller(seller, lastValidRunId) {
   });
 
   if (runStatus === 'invalid') {
-    // Exit 0: el run se guardó correctamente en DB, validate_run lo rechazará
     console.error(`⚠️  RUN MARCADO INVÁLIDO: ${invalidReason}`);
     console.error('   El paso validate_run abortará el pipeline de detección.\n');
     process.exit(0);
