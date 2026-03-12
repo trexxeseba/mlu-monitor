@@ -6,7 +6,7 @@
   "scripts": {
     "monitor":  "node src/monitor.js",
     "validate": "node src/validate_run.js",
-    "detector": "python3 src/detector_bajas.py"
+    "detector": "node src/detector_bajas.js"
   },
   "keywords": [],
   "author": "",

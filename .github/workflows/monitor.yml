@@ -32,15 +32,6 @@ jobs:
       - name: Instalar dependencias npm
         run: npm install
 
-      # ── Python ──────────────────────────────────────────────────────────────
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Instalar dependencias Python
-        run: pip install -r requirements.txt
-
       # ── Step 1: Monitor ─────────────────────────────────────────────────────
       - name: "1/3 — Monitor (scraping + snapshots)"
         id: monitor
@@ -74,7 +65,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           set -o pipefail
-          python3 src/detector_bajas.py 2>&1 | tee output/detector.log
+          node src/detector_bajas.js 2>&1 | tee output/detector.log
 
       # ── Nota si el run fue inválido ──────────────────────────────────────────
       - name: Informar run inválido
