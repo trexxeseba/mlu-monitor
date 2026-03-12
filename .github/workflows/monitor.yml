@@ -4,13 +4,8 @@ name: MLU Monitor Pipeline
 on:
   workflow_dispatch:    # Activación manual siempre disponible
 
-  # Cron desactivado hasta validar manualmente que el sistema funciona.
-  # Descomentar SOLO después de:
-  #   1. Correr 001_monitor_runs.sql en Supabase
-  #   2. Validar al menos 2 runs manuales exitosos
-  #   3. Confirmar que el detector clasifica correctamente
-  # schedule:
-  #   - cron: '0 */4 * * *'   # Cada 4 horas (6x por día)
+  schedule:
+    - cron: '0 */4 * * *'   # Cada 4 horas (6x por día)
 
 # ─── Job principal ────────────────────────────────────────────────────────────
 jobs:
