@@ -1,0 +1,95 @@
+name: MLU Monitor Pipeline
+
+# ─── Triggers ─────────────────────────────────────────────────────────────────
+on:
+  workflow_dispatch:    # Activación manual siempre disponible
+
+  # Cron desactivado hasta validar manualmente que el sistema funciona.
+  # Descomentar SOLO después de:
+  #   1. Correr 001_monitor_runs.sql en Supabase
+  #   2. Validar al menos 2 runs manuales exitosos
+  #   3. Confirmar que el detector clasifica correctamente
+  # schedule:
+  #   - cron: '0 */4 * * *'   # Cada 4 horas (6x por día)
+
+# ─── Job principal ────────────────────────────────────────────────────────────
+jobs:
+  pipeline:
+    name: Monitor → Validate → Detector
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Node.js ─────────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias npm
+        run: npm install
+
+      # ── Python ──────────────────────────────────────────────────────────────
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias Python
+        run: pip install -r requirements.txt
+
+      # ── Step 1: Monitor ─────────────────────────────────────────────────────
+      - name: "1/3 — Monitor (scraping + snapshots)"
+        id: monitor
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SCRAPFLY_KEY: ${{ secrets.SCRAPFLY_KEY }}
+        run: |
+          set -o pipefail
+          mkdir -p output
+          node src/monitor.js 2>&1 | tee output/monitor.log
+
+      # ── Step 2: Validate run ─────────────────────────────────────────────────
+      # continue-on-error: true → si el run es inválido, el job no falla (solo
+      # se marca el step como failed) y se puede subir el artifact igualmente.
+      - name: "2/3 — Validate run (gate anti-falsos-positivos)"
+        id: validate
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          set -o pipefail
+          node src/validate_run.js 2>&1 | tee output/validate.log
+
+      # ── Step 3: Detector (solo si el run es válido) ──────────────────────────
+      - name: "3/3 — Detector de cambios"
+        if: steps.validate.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          set -o pipefail
+          python3 src/detector_bajas.py 2>&1 | tee output/detector.log
+
+      # ── Nota si el run fue inválido ──────────────────────────────────────────
+      - name: Informar run inválido
+        if: steps.validate.outcome == 'failure'
+        run: |
+          echo "⚠️  El run fue marcado como inválido. El detector NO corrió."
+          echo "    Revisar output/validate.log y output/monitor.log para el motivo."
+
+      # ── Subir artifacts ──────────────────────────────────────────────────────
+      # Siempre se suben — incluso si el monitor falla — para poder debuggear.
+      # Los logs NO se commitean al repo.
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlu-monitor-run-${{ github.run_number }}
+          path: output/
+          retention-days: 30

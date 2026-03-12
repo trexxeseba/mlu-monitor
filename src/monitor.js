@@ -1,0 +1,350 @@
+'use strict';
+
+const https = require('https');
+const { createClient } = require('@supabase/supabase-js');
+
+// ─── Verificar secrets ────────────────────────────────────────────────────────
+['SUPABASE_URL', 'SUPABASE_KEY', 'SCRAPFLY_KEY'].forEach(k => {
+  if (!process.env[k]) { console.error(`FATAL: falta secret ${k}`); process.exit(1); }
+});
+
+const supabase     = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const SCRAPFLY_KEY = process.env.SCRAPFLY_KEY;
+
+const RUN_ID     = `run_${Date.now()}`;
+const STARTED_AT = new Date().toISOString();
+const SEP = '═'.repeat(70);
+
+// ─── Umbrales de validez ──────────────────────────────────────────────────────
+const MAX_SELLER_FAIL_RATIO  = 0.30;  // >30% sellers fallidos → run inválido
+const MAX_ITEMS_DROP_RATIO   = 0.40;  // >40% caída de items vs run válido previo → inválido
+const MIN_SELLER_ITEMS_RATIO = 0.50;  // seller devuelve <50% de su baseline → fallo de scraping
+
+console.log(`\n${SEP}`);
+console.log('MONITOR MLU — INICIO');
+console.log(`RUN_ID:     ${RUN_ID}`);
+console.log(`STARTED_AT: ${STARTED_AT}`);
+console.log(`${SEP}\n`);
+
+// ─── HTTP helper ──────────────────────────────────────────────────────────────
+function httpGet(hostname, path) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({ hostname, path, method: 'GET' }, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout 30s')); });
+    req.end();
+  });
+}
+
+// ─── Scrapfly: obtener IDs de items del listado ───────────────────────────────
+async function scrapeSellerIds(sellerId) {
+  const targetUrl = encodeURIComponent(
+    `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`
+  );
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&asp=true&render_js=true&rendering_wait=5000&country=uy`;
+
+  console.log(`  📡 Scrapfly → seller ${sellerId}...`);
+  const res = await httpGet('api.scrapfly.io', path);
+  if (res.status !== 200) throw new Error(`Scrapfly HTTP ${res.status}`);
+
+  const raw = res.body;
+  const contentIdx = raw.indexOf('"content"');
+  if (contentIdx < 0) throw new Error('Scrapfly: sin campo "content"');
+
+  const contentStart = contentIdx + '"content":"'.length;
+  const endMarker    = raw.indexOf('","format":', contentStart);
+  if (endMarker < 0) throw new Error('Scrapfly: sin cierre de content');
+
+  const html = raw.slice(contentStart, endMarker)
+    .replace(/\\u([\dA-Fa-f]{4})/g, (_, c) => String.fromCharCode(parseInt(c, 16)))
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '');
+
+  if (html.includes('account-verification') || html.length < 5000)
+    throw new Error('Scrapfly: página bloqueada o vacía');
+
+  console.log(`  ✅ HTML recibido: ${html.length} bytes`);
+
+  const itemIds = [...new Set((html.match(/MLU\d+/g) || []))];
+  if (!itemIds.length) throw new Error('0 IDs MLU encontrados en el HTML');
+
+  console.log(`  📋 IDs únicos extraídos: ${itemIds.length}`);
+  return itemIds;
+}
+
+// ─── MeLi API: detalle de un item ────────────────────────────────────────────
+async function fetchItemDetail(itemId) {
+  const res = await httpGet('api.mercadolibre.com', `/items/${itemId}`);
+  if (res.status !== 200) throw new Error(`MeLi API HTTP ${res.status}`);
+  const d = JSON.parse(res.body);
+  return {
+    id:                 itemId,
+    title:              d.title              || 'Sin título',
+    price:              d.price              || 0,
+    currency:           d.currency_id        || 'UYU',
+    status:             d.status             || 'active',
+    available_quantity: d.available_quantity || 0,
+    sold_quantity:      d.sold_quantity      || 0,
+    url:                d.permalink          || '',
+    thumbnail:          d.thumbnail          || '',
+    condition:          d.condition          || '',
+    category_id:        d.category_id        || '',
+  };
+}
+
+// ─── Obtener sellers activos ──────────────────────────────────────────────────
+async function getActiveSellers() {
+  const { data, error } = await supabase
+    .from('sellers')
+    .select('*')
+    .eq('activo', true);
+  if (error) throw new Error(`getSellers: ${error.message}`);
+  if (!data?.length) throw new Error('No hay sellers activos en la BD');
+  return data;
+}
+
+// ─── Obtener último run válido ────────────────────────────────────────────────
+async function getLastValidRun() {
+  const { data, error } = await supabase
+    .from('monitor_runs')
+    .select('run_id, total_items, finished_at')
+    .eq('status', 'valid')
+    .order('finished_at', { ascending: false })
+    .limit(1);
+  if (error) {
+    console.warn(`  ⚠️  No se pudo consultar monitor_runs: ${error.message}`);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
+// ─── Baseline de items de un seller en el último run válido ──────────────────
+async function getSellerBaseline(sellerId, validRunId) {
+  if (!validRunId) return null;
+  const { data, error } = await supabase
+    .from('snapshots')
+    .select('meli_item_id', { count: 'exact', head: true })
+    .eq('seller_id', String(sellerId))
+    .eq('run_id', validRunId);
+  if (error) return null;
+  return data?.length ?? null;
+}
+
+// ─── Guardar snapshots de un seller ──────────────────────────────────────────
+async function saveSnapshots(sellerId, items) {
+  const checkedAt = new Date().toISOString();
+  const rows = items.map(item => ({
+    seller_id:          String(sellerId),
+    meli_item_id:       item.id,
+    item_id:            item.id,
+    title:              item.title,
+    price:              item.price,
+    currency:           item.currency,
+    status:             item.status,
+    available_quantity: item.available_quantity,
+    sold_quantity:      item.sold_quantity,
+    url:                item.url,
+    thumbnail:          item.thumbnail,
+    condition:          item.condition,
+    category_id:        item.category_id,
+    run_id:             RUN_ID,
+    checked_at:         checkedAt,
+    timestamp:          checkedAt,
+  }));
+
+  const { error } = await supabase.from('snapshots').insert(rows);
+  if (error) {
+    // Duplicate key → insertar de a uno
+    if (error.message?.includes('duplicate') || error.code === '23505') {
+      let inserted = 0;
+      for (const row of rows) {
+        const { error: e2 } = await supabase.from('snapshots').insert([row]);
+        if (!e2) inserted++;
+      }
+      return inserted;
+    }
+    throw new Error(`saveSnapshots: ${error.message}`);
+  }
+  return rows.length;
+}
+
+// ─── Registrar estado del run en monitor_runs ─────────────────────────────────
+async function upsertRun(fields) {
+  const { error } = await supabase
+    .from('monitor_runs')
+    .upsert([{ run_id: RUN_ID, ...fields }], { onConflict: 'run_id' });
+  if (error) console.warn(`  ⚠️  monitor_runs upsert: ${error.message}`);
+}
+
+// ─── Procesar un seller ────────────────────────────────────────────────────────
+async function processSeller(seller, lastValidRunId) {
+  const sellerId = seller.seller_id;
+  const name     = seller.nombre_real || seller.nickname || String(sellerId);
+  console.log(`\n${'─'.repeat(70)}\n🏪 ${name} (ID: ${sellerId})`);
+
+  let status = 'failed', errorMessage = '', itemsFound = 0;
+
+  try {
+    // 1. Obtener IDs desde el listado
+    const itemIds = await scrapeSellerIds(sellerId);
+
+    // 2. Validar contra baseline del último run válido
+    const baseline = await getSellerBaseline(sellerId, lastValidRunId);
+    if (baseline !== null && itemIds.length < baseline * MIN_SELLER_ITEMS_RATIO) {
+      throw new Error(
+        `Solo ${itemIds.length} items vs baseline ${baseline} — probable fallo de scraping (< ${MIN_SELLER_ITEMS_RATIO * 100}%)`
+      );
+    }
+
+    // 3. Obtener detalle de TODOS los items desde la API de MeLi (sin límite)
+    const items = [];
+    for (const itemId of itemIds) {
+      try {
+        const detail = await fetchItemDetail(itemId);
+        items.push(detail);
+      } catch (e) {
+        console.warn(`    ⚠️  ${itemId}: ${e.message}`);
+      }
+    }
+
+    if (!items.length) throw new Error('0 detalles obtenidos de la API de MeLi');
+
+    itemsFound = items.length;
+
+    // Preview de los primeros 3
+    items.slice(0, 3).forEach(i =>
+      console.log(
+        `    [${i.id}] ${i.title.substring(0, 45)} | $${i.price}` +
+        ` | stock:${i.available_quantity} | sold:${i.sold_quantity}`
+      )
+    );
+
+    // 4. Guardar snapshots
+    const saved = await saveSnapshots(sellerId, items);
+    console.log(`  ✅ ${saved}/${itemsFound} snapshots guardados`);
+    status = 'ok';
+
+  } catch (err) {
+    errorMessage = err.message;
+    console.error(`  ❌ FALLO: ${errorMessage}`);
+  }
+
+  return { sellerId, name, status, errorMessage, itemsFound };
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────────
+(async () => {
+  // Registrar inicio
+  await upsertRun({ status: 'running', started_at: STARTED_AT });
+
+  // Obtener sellers
+  let sellers = [];
+  try {
+    sellers = await getActiveSellers();
+    console.log(`📋 ${sellers.length} sellers activos\n`);
+  } catch (err) {
+    console.error(`\n❌ FATAL al obtener sellers: ${err.message}`);
+    await upsertRun({
+      status: 'invalid',
+      invalid_reason: `getSellers fatal: ${err.message}`,
+      finished_at: new Date().toISOString(),
+    });
+    process.exit(1);
+  }
+
+  // Obtener referencia del último run válido para comparación de baseline
+  const lastValidRun      = await getLastValidRun();
+  const lastValidRunId    = lastValidRun?.run_id    || null;
+  const lastValidRunItems = lastValidRun?.total_items ?? null;
+
+  if (lastValidRun) {
+    console.log(`📌 Último run válido: ${lastValidRunId} (${lastValidRunItems} items)\n`);
+  } else {
+    console.log(`📌 Sin run válido previo — sin baseline de comparación\n`);
+  }
+
+  // Procesar cada seller
+  const results   = [];
+  let totalItems  = 0;
+  let totalFailed = 0;
+
+  for (const seller of sellers) {
+    const result = await processSeller(seller, lastValidRunId);
+    results.push(result);
+    totalItems  += result.itemsFound;
+    if (result.status === 'failed') totalFailed++;
+  }
+
+  // ─── Validación del run ───────────────────────────────────────────────────
+  const failRatio      = sellers.length > 0 ? totalFailed / sellers.length : 1;
+  const itemsDeltaRatio = (lastValidRunItems !== null && lastValidRunItems > 0)
+    ? (lastValidRunItems - totalItems) / lastValidRunItems
+    : null;
+
+  let runStatus     = 'valid';
+  let invalidReason = null;
+
+  if (failRatio > MAX_SELLER_FAIL_RATIO) {
+    runStatus     = 'invalid';
+    invalidReason = `${(failRatio * 100).toFixed(1)}% sellers fallaron` +
+      ` (umbral: ${MAX_SELLER_FAIL_RATIO * 100}%)`;
+  } else if (itemsDeltaRatio !== null && itemsDeltaRatio > MAX_ITEMS_DROP_RATIO) {
+    runStatus     = 'invalid';
+    invalidReason = `Items cayeron ${(itemsDeltaRatio * 100).toFixed(1)}%` +
+      ` vs run válido previo (umbral: ${MAX_ITEMS_DROP_RATIO * 100}%)`;
+  }
+
+  // ─── Resumen ──────────────────────────────────────────────────────────────
+  console.log(`\n${SEP}`);
+  console.log('RESUMEN FINAL');
+  console.log(SEP);
+  results.forEach(r =>
+    console.log(
+      `  ${r.status === 'ok' ? '✅' : '❌'} ${r.name}: ${r.itemsFound} items` +
+      (r.errorMessage ? ` — ${r.errorMessage}` : '')
+    )
+  );
+  console.log(`\n  Sellers total:    ${sellers.length}`);
+  console.log(`  Sellers OK:       ${sellers.length - totalFailed}`);
+  console.log(`  Sellers fallidos: ${totalFailed} (${(failRatio * 100).toFixed(1)}%)`);
+  console.log(`  Items totales:    ${totalItems}`);
+  if (itemsDeltaRatio !== null) {
+    const sign = itemsDeltaRatio >= 0 ? '↓' : '↑';
+    console.log(`  Items vs previo:  ${sign}${Math.abs(itemsDeltaRatio * 100).toFixed(1)}%`);
+  }
+  console.log(`  Run status:       ${runStatus.toUpperCase()}`);
+  if (invalidReason) console.log(`  Motivo inválido:  ${invalidReason}`);
+  console.log(`${SEP}\n`);
+
+  // ─── Guardar run final ────────────────────────────────────────────────────
+  await upsertRun({
+    status:              runStatus,
+    invalid_reason:      invalidReason,
+    sellers_total:       sellers.length,
+    sellers_ok:          sellers.length - totalFailed,
+    sellers_failed:      totalFailed,
+    total_items:         totalItems,
+    prev_valid_run_id:   lastValidRunId,
+    prev_total_items:    lastValidRunItems,
+    items_delta_pct:     itemsDeltaRatio !== null
+      ? parseFloat((itemsDeltaRatio * 100).toFixed(2))
+      : null,
+    finished_at: new Date().toISOString(),
+  });
+
+  if (runStatus === 'invalid') {
+    // Exit 0: el run se guardó correctamente en DB, validate_run lo rechazará
+    console.error(`⚠️  RUN MARCADO INVÁLIDO: ${invalidReason}`);
+    console.error('   El paso validate_run abortará el pipeline de detección.\n');
+    process.exit(0);
+  }
+
+  console.log(`✅ RUN VÁLIDO — listo para validate_run y detector\n`);
+  process.exit(0);
+})();

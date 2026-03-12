@@ -1,8 +1,28 @@
 node_modules/
-clauditaaa-0b93ce3a496b.json
+
+# Credenciales — nunca commitear
+clauditaaa-*.json
 *.json.key
+*.pem
+
+# Logs de ejecución — se suben como artifacts en GHA, no al repo
+output/*.log
+output/latest/
+
+# Archivos de debug locales (legacy)
 page.html
 debug-html.js
 debug2.js
 debug3.js
 inspect-schema.js
+output/debug_raw.html
+
+# CSVs generados localmente
+VENDIDOS_*.csv
+RESUMEN_*.csv
+SELLERS.csv
+SNAPSHOTS.csv
+
+# Misc
+.env
+.DS_Store
