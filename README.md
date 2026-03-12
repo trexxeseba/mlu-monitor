@@ -1,83 +1,129 @@
-# MLU Monitor — Sheets Sync
+# MLU Monitor v2.0
 
-Sincroniza datos de Supabase a Google Sheets cada 2 horas.
+Monitor robusto de competidores en **Mercado Libre Uruguay**.
+Detecta ventas, cambios de precio, variaciones de stock y desaparición de items,
+con validación de integridad de cada run para minimizar falsos positivos.
 
-## Setup (primera vez)
+---
 
-### 1. Clonar & instalar
+## Arquitectura
+
+```
+GitHub Actions (manual o cron cada 4h)
+    │
+    ├─ 1. src/monitor.js       → Scrapea sellers, guarda snapshots en Supabase
+    ├─ 2. src/validate_run.js  → Verifica que el run no esté roto
+    └─ 3. src/detector_bajas.py → Compara run válido actual vs anterior
+                                   Guarda cambios en bajas_detectadas
+```
+
+Ver: [`docs/CTO_ARCHITECTURE_MELI_MONITOR.md`](docs/CTO_ARCHITECTURE_MELI_MONITOR.md)
+
+---
+
+## Primeros pasos
+
+### 1. Correr la migración SQL (una sola vez)
+
+En Supabase → SQL Editor → pegar `docs/sql/001_monitor_runs.sql` → Run.
+
+### 2. Configurar secrets en GitHub
+
+`Settings → Secrets and variables → Actions`:
+
+| Secret        | Descripción                     |
+|---------------|---------------------------------|
+| SUPABASE_URL  | URL del proyecto Supabase       |
+| SUPABASE_KEY  | Service role key de Supabase    |
+| SCRAPFLY_KEY  | API key de Scrapfly             |
+
+### 3. Validar manualmente antes de activar el cron
+
 ```bash
-cd C:\Users\undia\mlu-monitor
 npm install
+pip install -r requirements.txt
+
+export SUPABASE_URL="..."
+export SUPABASE_KEY="..."
+export SCRAPFLY_KEY="..."
+
+node src/monitor.js
+node src/validate_run.js    # debe salir con código 0
+python3 src/detector_bajas.py
 ```
 
-### 2. Crear Google Service Account
-- Google Cloud Console → proyecto `clauditaaa`
-- IAM → Service Accounts → `mlu-monitor-sheets`
-- Generar JSON key → descargar como `clauditaaa-dbcde137b8d8.json`
-- Guardar en esta carpeta
+### 4. Activar el cron (cuando ≥2 runs manuales sean exitosos)
 
-### 3. Compartir Google Sheet
-- Copiar `client_email` del JSON: `mlu-monitor-sheets@clauditaaa.iam.gserviceaccount.com`
-- Ir a tu Google Sheet
-- Compartir con ese email (Editor)
-
-### 4. Configurar Windows Task Scheduler
-```powershell
-# Run como Administrator en PowerShell
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
-C:\Users\undia\mlu-monitor\schedule-2h.ps1
+En `.github/workflows/monitor.yml`, descomentar:
+```yaml
+  schedule:
+    - cron: '0 */4 * * *'   # Cada 4 horas
 ```
 
-Eso crea una tarea que corre cada 2 horas automáticamente.
+---
 
-## Archivos
+## Scripts disponibles
 
-- `monitor.js` — scraper original (cada 6h via Task Scheduler)
-- `sheets-sync.js` — sync a Google Sheets (cada 2h)
-- `clauditaaa-dbcde137b8d8.json` — credenciales Google (NO compartir públicamente)
-- `schedule-2h.ps1` — setup del scheduler
-- `run-sheets-sync.ps1` — wrapper que ejecuta sheets-sync.js
-
-## Google Sheets
-
-Tu sheet tiene 3 hojas:
-
-### RESUMEN
-- Vendedor ID, Nickname
-- Total items, Items vendidos
-- % de venta
-- Último update
-
-### PRODUCTOS
-- Seller ID, Item ID, Título, Precio
-- Estado (active, sold, etc)
-- Last seen
-
-### TIMELINE
-- Cambios recientes por fecha
-- Tipo de cambio (disappeared, appeared, etc)
-
-## Logs
-
-Los logs de cada ejecución van en:
-```
-C:\Users\undia\mlu-monitor\logs\sheets-sync-YYYY-MM-DD.log
-```
-
-## Parar la tarea
-
-```powershell
-Unregister-ScheduledTask -TaskName "MLU Monitor Sheets Sync (2h)" -Confirm:$false
-```
-
-## Debug
-
-Ejecutar manualmente:
-```powershell
-C:\Users\undia\mlu-monitor\run-sheets-sync.ps1
-```
-
-O directamente:
 ```bash
-node C:\Users\undia\mlu-monitor\sheets-sync.js
+npm run monitor    # node src/monitor.js
+npm run validate   # node src/validate_run.js
+npm run detector   # python3 src/detector_bajas.py
 ```
+
+---
+
+## Tipos de cambio detectados
+
+| Tipo                         | Descripción                                      |
+|------------------------------|--------------------------------------------------|
+| `vendido_confirmado`         | `sold_quantity` aumentó entre runs               |
+| `vendido_probable`           | `available_quantity` bajó, item sigue activo     |
+| `desaparecido_no_confirmado` | Item no aparece en el run actual                 |
+| `nuevo`                      | Item aparece por primera vez                     |
+| `precio_cambio`              | Precio cambió ≥ 5%                               |
+| `stock_cambio`               | Stock cambió sin venta confirmada                |
+| `status_cambio`              | Campo status cambió (active/paused/closed)       |
+
+---
+
+## Estructura del repositorio
+
+```
+mlu-monitor/
+├── src/
+│   ├── monitor.js           ← Scraper principal
+│   ├── validate_run.js      ← Validador de integridad del run
+│   └── detector_bajas.py    ← Detector de cambios
+├── docs/
+│   ├── sql/
+│   │   └── 001_monitor_runs.sql
+│   ├── CTO_ARCHITECTURE_MELI_MONITOR.md
+│   ├── RUNBOOK_OPERACION.md
+│   └── IA_ENGINEERING_PROMPT.md
+├── .github/
+│   └── workflows/
+│       └── monitor.yml      ← Pipeline principal (cron desactivado)
+├── legacy/                  ← Archivos viejos, NO usar en producción
+├── output/                  ← Logs locales (ignorados por git)
+├── package.json
+└── requirements.txt
+```
+
+---
+
+## Seguridad
+
+> ⚠️  **Commits anteriores contienen credenciales de Supabase en texto plano**
+> (`legacy/download-supabase.js` y `legacy/GITHUB_SECRETS_SETUP.md`).
+> **Rotar la service role key inmediatamente** si el repo es público o fue clonado por terceros.
+>
+> Supabase Dashboard → Settings → API → regenerar `service_role` key → actualizar GitHub Secret `SUPABASE_KEY`.
+
+---
+
+## Documentación adicional
+
+- [Arquitectura técnica](docs/CTO_ARCHITECTURE_MELI_MONITOR.md)
+- [Runbook operacional](docs/RUNBOOK_OPERACION.md)
+- [Contexto para IA](docs/IA_ENGINEERING_PROMPT.md)
+- [Setup de secrets](GITHUB_SECRETS_SETUP.md)
