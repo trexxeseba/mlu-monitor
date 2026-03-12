@@ -2,8 +2,8 @@
 ══════════════════════════════════════════════════════════════════════
 🚀 MONITOR MEJORADO - EJECUTADO
 ═'.repeat(70)}
-RUN_ID:     run_1773304087208
-CHECKED_AT: 2026-03-12T08:28:07.208Z
+RUN_ID:     run_1773307867744
+CHECKED_AT: 2026-03-12T09:31:07.744Z
 
 
 📋 Procesando 15 vendedores...
@@ -12,7 +12,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 TIOPACO - Monedas y Antigüedades (ID: 42794274)
   📡 Scrapeando Scrapfly para seller 42794274...
-  ✅ HTML recibido: 1038439 bytes
+  ✅ HTML recibido: 1038341 bytes
   ✅ Items encontrados: 108
   ⚠️  No se pudo obtener MLU108423111439: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU107029798080: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -69,7 +69,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 ERNESTO UNION (ID: 82819150)
   📡 Scrapeando Scrapfly para seller 82819150...
-  ✅ HTML recibido: 1209877 bytes
+  ✅ HTML recibido: 1200685 bytes
   ✅ Items encontrados: 139
   ⚠️  No se pudo obtener MLU100859232098: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU106801816190: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -126,7 +126,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 KAMBA CUA (ID: 191098554)
   📡 Scrapeando Scrapfly para seller 191098554...
-  ✅ HTML recibido: 1316346 bytes
+  ✅ HTML recibido: 1315532 bytes
   ✅ Items encontrados: 247
   ⚠️  No se pudo obtener MLU51274093797: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU48149782561: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -183,7 +183,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 AMADO LIBROS LIBRERIA EN LINEA (ID: 440298103)
   📡 Scrapeando Scrapfly para seller 440298103...
-  ✅ HTML recibido: 2214139 bytes
+  ✅ HTML recibido: 2209766 bytes
   ✅ Items encontrados: 121
   ⚠️  No se pudo obtener MLU631885765: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU863168230: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -240,7 +240,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 LAVITRINA (ID: 65472902)
   📡 Scrapeando Scrapfly para seller 65472902...
-  ✅ HTML recibido: 1157195 bytes
+  ✅ HTML recibido: 1153769 bytes
   ✅ Items encontrados: 146
   ⚠️  No se pudo obtener MLU89503217098: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU78243884490: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -297,7 +297,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 GAMI4040741 (ID: 278811319)
   📡 Scrapeando Scrapfly para seller 278811319...
-  ✅ HTML recibido: 1147498 bytes
+  ✅ HTML recibido: 1143572 bytes
   ✅ Items encontrados: 143
   ⚠️  No se pudo obtener MLU77979902550: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU89140272760: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -354,7 +354,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 SYLVIAPOMBOSANSBERRO (ID: 165896717)
   📡 Scrapeando Scrapfly para seller 165896717...
-  ✅ HTML recibido: 1168052 bytes
+  ✅ HTML recibido: 1165366 bytes
   ✅ Items encontrados: 133
   ⚠️  No se pudo obtener MLU82429003568: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU88978230375: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -411,7 +411,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 CAAAD7314725 (ID: 792978463)
   📡 Scrapeando Scrapfly para seller 792978463...
-  ✅ HTML recibido: 1013113 bytes
+  ✅ HTML recibido: 1000394 bytes
   ✅ Items encontrados: 115
   ⚠️  No se pudo obtener MLU86422505930: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU86472363929: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -468,7 +468,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 CARLOFOTOGRAFIAS (ID: 65437681)
   📡 Scrapeando Scrapfly para seller 65437681...
-  ✅ HTML recibido: 1156801 bytes
+  ✅ HTML recibido: 1158343 bytes
   ✅ Items encontrados: 119
   ⚠️  No se pudo obtener MLU94131358133: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU83153697575: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -525,7 +525,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 ELCAZADORVINTAGE (ID: 224996484)
   📡 Scrapeando Scrapfly para seller 224996484...
-  ✅ HTML recibido: 1326765 bytes
+  ✅ HTML recibido: 1326812 bytes
   ✅ Items encontrados: 138
   ⚠️  No se pudo obtener MLU99635709223: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU95978672154: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -582,7 +582,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 WILICARBONERO (ID: 30727726)
   📡 Scrapeando Scrapfly para seller 30727726...
-  ✅ HTML recibido: 1104006 bytes
+  ✅ HTML recibido: 1119165 bytes
   ✅ Items encontrados: 129
   ⚠️  No se pudo obtener MLU77097643227: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU77127889789: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -639,7 +639,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 CARSL (ID: 6470403)
   📡 Scrapeando Scrapfly para seller 6470403...
-  ✅ HTML recibido: 736550 bytes
+  ✅ HTML recibido: 736518 bytes
   ✅ Items encontrados: 119
   ⚠️  No se pudo obtener MLU5725: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU2818: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -696,7 +696,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 VENGANZADEREINAANA (ID: 101941840)
   📡 Scrapeando Scrapfly para seller 101941840...
-  ✅ HTML recibido: 874739 bytes
+  ✅ HTML recibido: 874311 bytes
   ✅ Items encontrados: 90
   ⚠️  No se pudo obtener MLU30067348: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU84414797338: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -753,7 +753,7 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 ELMUSEITO (ID: 74533587)
   📡 Scrapeando Scrapfly para seller 74533587...
-  ✅ HTML recibido: 1318461 bytes
+  ✅ HTML recibido: 1330687 bytes
   ✅ Items encontrados: 162
   ⚠️  No se pudo obtener MLU89730507783: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU86224054227: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -810,16 +810,11 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
 ──────────────────────────────────────────────────────────────────────
 🏪 DESCONOCIDO (ID: 81598742)
   📡 Scrapeando Scrapfly para seller 81598742...
-  ✅ HTML recibido: 1088578 bytes
+  ✅ HTML recibido: 712370 bytes
   ✅ Items encontrados: 118
   ⚠️  No se pudo obtener MLU93863450914: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU88903804397: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU93793246732: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
-  ⚠️  No se pudo obtener MLU949685224: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
-  ⚠️  No se pudo obtener MLU706081272: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
-  ⚠️  No se pudo obtener MLU800399326: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
-  ⚠️  No se pudo obtener MLU887583082: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
-  ⚠️  No se pudo obtener MLU889081138: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU1367: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU442392: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU5726: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
@@ -831,6 +826,11 @@ CHECKED_AT: 2026-03-12T08:28:07.208Z
   ⚠️  No se pudo obtener MLU1430: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU409431: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU1953: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
+  ⚠️  No se pudo obtener MLU949685224: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
+  ⚠️  No se pudo obtener MLU706081272: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
+  ⚠️  No se pudo obtener MLU800399326: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
+  ⚠️  No se pudo obtener MLU887583082: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
+  ⚠️  No se pudo obtener MLU889081138: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU706476782: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU653532997: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
   ⚠️  No se pudo obtener MLU887465324: getaddrinfo ENOTFOUND api.mercadolibre.com.uy
