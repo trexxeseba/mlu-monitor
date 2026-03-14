@@ -67,7 +67,8 @@ async function scrapeSellerIds(sellerId) {
 
   console.log(`  ✅ HTML recibido: ${html.length} bytes`);
 
-  const itemIds = [...new Set((html.match(/MLU\d+/g) || []))];
+  // IDs de ítem MLU: entre 9 y 12 dígitos. Excluye seller IDs (~8 dígitos) y strings más largos.
+  const itemIds = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
   if (!itemIds.length) throw new Error('0 IDs MLU encontrados en el HTML');
 
   console.log(`  📋 IDs únicos extraídos: ${itemIds.length}`);

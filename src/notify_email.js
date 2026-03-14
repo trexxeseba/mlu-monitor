@@ -25,9 +25,16 @@ const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
-function httpGet(hostname, path) {
+function httpGet(hostname, path, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
-    const req = https.request({ hostname, path, method: 'GET' }, res => {
+    const req = https.request({
+      hostname, path, method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MLUMonitor/2.0)',
+        'Accept':     'application/json',
+        ...extraHeaders,
+      },
+    }, res => {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => resolve({ status: res.statusCode, body: data }));
@@ -113,10 +120,18 @@ async function getSellerNames(sellerIds) {
 
 // ─── Obtener título y precio de items via MLU API pública ─────────────────────
 // Endpoint: GET https://api.mercadolibre.com/items?ids=MLU1,MLU2,...
-// Gratis, sin auth, máximo 20 IDs por request.
+// Sin auth, máximo 20 IDs por request.
 async function fetchItemDetails(itemIds) {
   const details = {};
   if (!itemIds.length) return details;
+
+  // Test rápido con 1 ítem para detectar bloqueo de IP antes de iterar
+  const testId  = itemIds[0];
+  const testRes = await httpGet('api.mercadolibre.com', `/items/${testId}`).catch(e => ({ status: 0, body: e.message }));
+  if (testRes.status !== 200) {
+    console.warn(`  ⚠️  MLU API no accesible desde este runner (HTTP ${testRes.status}) — email sin títulos`);
+    return details;
+  }
 
   const CHUNK = 20;
   for (let i = 0; i < itemIds.length; i += CHUNK) {
@@ -124,7 +139,10 @@ async function fetchItemDetails(itemIds) {
     const path  = `/items?ids=${chunk.join(',')}`;
     try {
       const res = await httpGet('api.mercadolibre.com', path);
-      if (res.status !== 200) continue;
+      if (res.status !== 200) {
+        console.warn(`  ⚠️  MLU API chunk ${i/CHUNK+1}: HTTP ${res.status}`);
+        continue;
+      }
       const rows = JSON.parse(res.body);
       for (const row of rows) {
         if (row.code === 200 && row.body?.id) {
@@ -135,7 +153,9 @@ async function fetchItemDetails(itemIds) {
           details[b.id] = { title: b.title || null, price };
         }
       }
-    } catch (_) { /* si falla un chunk, continuar sin detalles */ }
+    } catch (e) {
+      console.warn(`  ⚠️  MLU API chunk error: ${e.message}`);
+    }
   }
   return details;
 }
