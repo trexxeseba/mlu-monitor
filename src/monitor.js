@@ -51,20 +51,16 @@ async function scrapeSellerIds(sellerId) {
   const res = await httpGet('api.scrapfly.io', path);
   if (res.status !== 200) throw new Error(`Scrapfly HTTP ${res.status}`);
 
-  const raw = res.body;
-  const contentIdx = raw.indexOf('"content"');
-  if (contentIdx < 0) throw new Error('Scrapfly: sin campo "content"');
+  let parsed;
+  try { parsed = JSON.parse(res.body); } catch (e) {
+    throw new Error(`Scrapfly: JSON inválido — ${e.message}`);
+  }
 
-  const contentStart = contentIdx + '"content":"'.length;
-  const endMarker    = raw.indexOf('","format":', contentStart);
-  if (endMarker < 0) throw new Error('Scrapfly: sin cierre de content');
+  if (!parsed.result?.success) {
+    throw new Error(`Scrapfly: fallo — ${parsed.result?.reason || 'sin razón'} (HTTP ${parsed.result?.status_code})`);
+  }
 
-  const html = raw.slice(contentStart, endMarker)
-    .replace(/\\u([\dA-Fa-f]{4})/g, (_, c) => String.fromCharCode(parseInt(c, 16)))
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '');
+  const html = parsed.result.content || '';
 
   if (html.includes('account-verification') || html.length < 5000)
     throw new Error('Scrapfly: página bloqueada o vacía');
