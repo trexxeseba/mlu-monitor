@@ -24,6 +24,20 @@
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
+// ─── HTTP helper ──────────────────────────────────────────────────────────────
+function httpGet(hostname, path) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({ hostname, path, method: 'GET' }, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout 30s')); });
+    req.end();
+  });
+}
+
 const supabase   = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const RESEND_KEY = process.env.RESEND_API_KEY;
 const FROM       = process.env.NOTIFY_FROM || 'MLU Monitor <onboarding@resend.dev>';
