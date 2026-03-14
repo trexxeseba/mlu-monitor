@@ -1,7 +1,9 @@
 'use strict';
 
+const fs = require('fs');
+
 /**
- * detector_bajas.js — v4, mínimo y auditable
+ * detector_bajas.js — v5, mínimo y auditable
  *
  * Por cada seller activo, de forma independiente:
  *   1. Encuentra los 2 run_ids más recientes con datos en snapshots
@@ -261,6 +263,23 @@ async function saveChanges(rows) {
     console.log(`  ✅ ${saved}/${rows.length} guardados`);
     totalSaved += saved;
   }
+
+  // ── Escribir summary JSON para write_sheets.js ───────────────────────────────
+  const summary = {
+    det_run_id: DET_RUN_ID,
+    timestamp:  NOW,
+    sellers: results.map(r => ({
+      seller_id:      r.sellerId,
+      name:           r.name,
+      run_actual:     r.runActual,
+      run_anterior:   r.runAnterior,
+      items_actuales: r.setActual.size,
+      desaparecidos:  r.desaparecidos.length,
+    })),
+  };
+  fs.mkdirSync('output', { recursive: true });
+  fs.writeFileSync('output/detector_summary.json', JSON.stringify(summary, null, 2));
+  console.log('\n📄 Summary escrito en output/detector_summary.json');
 
   // ── Cierre ───────────────────────────────────────────────────────────────────
   console.log(`\n${SEP}`);

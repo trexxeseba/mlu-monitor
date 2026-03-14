@@ -69,8 +69,20 @@ jobs:
           echo "⚠️  El run fue marcado como inválido. El detector NO corrió."
           echo "    Revisar output/validate.log y output/monitor.log para el motivo."
 
-      # ── Step 4: Notificación email (solo si hubo detecciones) ───────────────
-      - name: "4/3 — Notificación email"
+      # ── Step 4: Escribir en Google Sheets ────────────────────────────────────
+      - name: "4/4 — Escribir en Google Sheets"
+        if: steps.validate.outcome == 'success'
+        continue-on-error: true
+        env:
+          GSHEETS_SA_KEY_PATH: /tmp/sa_key.json
+          GSHEETS_SHEET_ID: 1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE
+        run: |
+          echo "${{ secrets.GSHEETS_SA_KEY }}" | base64 -d > /tmp/sa_key.json
+          set -o pipefail
+          node src/write_sheets.js 2>&1 | tee output/sheets.log
+
+      # ── Step 5: Notificación email (solo si hubo detecciones) ───────────────
+      - name: "5/4 — Notificación email"
         if: steps.validate.outcome == 'success'
         continue-on-error: true
         env:

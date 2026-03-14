@@ -4,7 +4,7 @@
   "description": "Monitor robusto de competidores en Mercado Libre Uruguay — Supabase + GitHub Actions",
   "main": "src/monitor.js",
   "scripts": {
-    "monitor":  "node src/monitor.js",
+    "monitor": "node src/monitor.js",
     "validate": "node src/validate_run.js",
     "detector": "node src/detector_bajas.js"
   },
@@ -13,6 +13,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@supabase/supabase-js": "^2.98.0"
+    "@supabase/supabase-js": "^2.98.0",
+    "googleapis": "^171.4.0"
+  },
+  "devDependencies": {
+    "libsodium-wrappers": "^0.8.2"
   }
 }
