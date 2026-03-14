@@ -97,8 +97,37 @@ async function getSellerNames(sellerIds) {
   return map;
 }
 
+// ─── Obtener título y precio de items via MLU API pública ─────────────────────
+// Endpoint: GET https://api.mercadolibre.com/items?ids=MLU1,MLU2,...
+// Gratis, sin auth, máximo 20 IDs por request.
+async function fetchItemDetails(itemIds) {
+  const details = {};
+  if (!itemIds.length) return details;
+
+  const CHUNK = 20;
+  for (let i = 0; i < itemIds.length; i += CHUNK) {
+    const chunk = itemIds.slice(i, i + CHUNK);
+    const path  = `/items?ids=${chunk.join(',')}`;
+    try {
+      const res = await httpGet('api.mercadolibre.com', path);
+      if (res.status !== 200) continue;
+      const rows = JSON.parse(res.body);
+      for (const row of rows) {
+        if (row.code === 200 && row.body?.id) {
+          const b = row.body;
+          const price = b.price != null
+            ? `$${Number(b.price).toLocaleString('es-UY')} ${b.currency_id || ''}`
+            : null;
+          details[b.id] = { title: b.title || null, price };
+        }
+      }
+    } catch (_) { /* si falla un chunk, continuar sin detalles */ }
+  }
+  return details;
+}
+
 // ─── Construir tabla HTML ──────────────────────────────────────────────────────
-function buildTable(rows, sellerNames, emptyMsg) {
+function buildTable(rows, sellerNames, itemDetails, emptyMsg) {
   if (!rows.length) {
     return `<p style="color:#888;font-style:italic;margin:8px 0">${emptyMsg}</p>`;
   }
@@ -117,8 +146,12 @@ function buildTable(rows, sellerNames, emptyMsg) {
     html += `<p style="margin:12px 0 4px;font-weight:bold;color:#333">${name} (${items.length} ítems)</p>`;
     html += '<ul style="margin:0 0 8px 0;padding-left:20px">';
     for (const item of items) {
-      const url = `https://articulo.mercadolibre.com.uy/-_${item.item_id}`;
-      html += `<li style="margin:2px 0"><a href="${url}" style="color:#1a73e8;text-decoration:none">${item.item_id}</a></li>`;
+      const url  = `https://articulo.mercadolibre.com.uy/-_${item.item_id}`;
+      const det  = itemDetails[item.item_id];
+      const label = det?.title
+        ? `${det.title}${det.price ? ` — ${det.price}` : ''}`
+        : item.item_id;
+      html += `<li style="margin:4px 0"><a href="${url}" style="color:#1a73e8;text-decoration:none">${label}</a></li>`;
     }
     html += '</ul>';
   }
@@ -126,7 +159,7 @@ function buildTable(rows, sellerNames, emptyMsg) {
 }
 
 // ─── Armar email HTML completo ─────────────────────────────────────────────────
-function buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames) {
+function buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames, itemDetails) {
   const fecha = new Date(run.finished_at).toLocaleString('es-UY', { timeZone: 'America/Montevideo' });
 
   const section = (emoji, title, color, rows, emptyMsg) => `
@@ -134,7 +167,7 @@ function buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames) {
       <h2 style="margin:0 0 10px;padding:8px 12px;background:${color};border-radius:6px;font-size:16px;color:#fff">
         ${emoji} ${title} (${rows.length})
       </h2>
-      ${buildTable(rows, sellerNames, emptyMsg)}
+      ${buildTable(rows, sellerNames, itemDetails, emptyMsg)}
     </div>`;
 
   const total = desaparecidos.length + nuevos.length + reaparecidos.length;
@@ -244,11 +277,17 @@ function sendEmail(subject, html) {
   const sellerIds = [...new Set(detections.map(d => String(d.seller_id)))];
   const sellerNames = await getSellerNames(sellerIds);
 
-  // 4. Construir email
-  const subject = `MLU Monitor — ${desaparecidos.length} ventas · ${nuevos.length} nuevos · ${reaparecidos.length} reapariciones`;
-  const html = buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames);
+  // 4. Título y precio de cada ítem via MLU API
+  const allItemIds = [...new Set(detections.map(d => d.item_id))];
+  console.log(`🔍 Obteniendo detalles de ${allItemIds.length} ítems desde MLU API...`);
+  const itemDetails = await fetchItemDetails(allItemIds);
+  console.log(`   ${Object.keys(itemDetails).length}/${allItemIds.length} ítems con título/precio`);
 
-  // 5. Enviar
+  // 5. Construir email
+  const subject = `MLU Monitor — ${desaparecidos.length} ventas · ${nuevos.length} nuevos · ${reaparecidos.length} reapariciones`;
+  const html = buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames, itemDetails);
+
+  // 6. Enviar
   console.log(`\n📧 Enviando email a ${TO}...`);
   let res;
   try {
