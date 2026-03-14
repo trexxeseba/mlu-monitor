@@ -1,22 +1,27 @@
 'use strict';
 
 /**
- * detector_bajas.js
+ * detector_bajas.js — v4, mínimo y auditable
  *
- * Compara el último run válido contra el run válido anterior.
- * Solo trabaja con item_ids extraídos del listado — sin dependencia de price,
- * stock ni sold_quantity.
+ * Por cada seller activo, de forma independiente:
+ *   1. Encuentra los 2 run_ids más recientes con datos en snapshots
+ *   2. Construye sets de item_ids para cada run
+ *   3. Calcula desaparecidos (set_anterior por diseño UPSERT)
+ *   4. Loguea todo lo suficiente para verificar a mano
+ *   5. Graba en bajas_detectadas (con chequeo de idempotencia por seller)
  *
- * Clasificaciones de cambio:
- *   nuevo                   → item aparece en run actual pero no en el anterior
- *                             y nunca fue registrado en bajas_detectadas
- *   desaparecido_no_confirmado → item estaba y ya no aparece
- *   reaparecido             → item vuelve a aparecer tras haber sido registrado
- *                             como desaparecido_no_confirmado
+ * NOTA sobre el diseño UPSERT de snapshots:
+ *   Cada item tiene UNA fila con el run_id del último scrape donde apareció.
+ *   Por tanto, para seller X:
+ *     set_actual   = WHERE seller_id=X AND run_id=run_actual   → activos ahora
+ *     set_anterior = WHERE seller_id=X AND run_id=run_anterior → desaparecidos
+ *   Los sets son DISJUNTOS por construcción — no hace falta restar.
+ *
+ * Detección de "nuevos" desactivada en esta fase.
  *
  * Salida:
- *   0 → detector completó (aunque no haya cambios)
- *   1 → error técnico o insuficientes runs válidos
+ *   0 → completó (aunque sin cambios)
+ *   1 → error técnico
  */
 
 ['SUPABASE_URL', 'SUPABASE_KEY'].forEach(k => {
@@ -26,109 +31,61 @@
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-const SEP = '═'.repeat(70);
+const SEP  = '═'.repeat(70);
+const SEP2 = '─'.repeat(70);
 
-// ─── Obtener los 2 últimos runs válidos ────────────────────────────────────────
-async function getLastTwoValidRuns() {
-  console.log('📊 Consultando últimos 2 runs válidos...');
-
-  // Intento 1: monitor_runs (tabla ideal)
-  {
-    const { data, error } = await supabase
-      .from('monitor_runs')
-      .select('*')
-      .eq('status', 'valid')
-      .order('finished_at', { ascending: false })
-      .limit(2);
-
-    if (!error && data && data.length >= 2) {
-      console.log(`  [monitor_runs] Run actual:   ${data[0].run_id}`);
-      console.log(`  [monitor_runs] Run anterior: ${data[1].run_id}`);
-      return [data[0], data[1]];
-    }
-    if (!error && data && data.length === 1) {
-      console.warn('⚠️  Solo 1 run válido en monitor_runs — insuficiente para comparar');
-    }
-    if (error && !error.message?.includes('schema cache') && !error.message?.includes('does not exist') && error.code !== '42P01') {
-      console.error(`❌ Error consultando monitor_runs: ${error.message}`);
-      // continuar al fallback igualmente
-    }
-  }
-
-  // Intento 2: execution_logs (fallback cuando monitor_runs no existe)
-  console.log('  ⚠️  Fallback a execution_logs...');
-  {
-    const { data, error } = await supabase
-      .from('execution_logs')
-      .select('*')
-      .eq('status', 'success')
-      .order('executed_at', { ascending: false })
-      .limit(2);
-
-    if (!error && data && data.length >= 2) {
-      const toRun = row => ({
-        run_id:       row.run_id,
-        total_items:  row.items_processed,
-        finished_at:  row.executed_at,
-        _source:      'execution_logs',
-      });
-      const [current, previous] = [toRun(data[0]), toRun(data[1])];
-      console.log(`  [execution_logs] Run actual:   ${current.run_id}`);
-      console.log(`  [execution_logs] Run anterior: ${previous.run_id}`);
-      return [current, previous];
-    }
-    if (!error && data && data.length === 1) {
-      console.warn('⚠️  Solo 1 run exitoso en execution_logs — insuficiente para comparar');
-    }
-  }
-
-  // Intento 3: 2 run_ids más recientes de snapshots
-  console.log('  Fallback: buscando 2 run_ids distintos en snapshots...');
-  {
-    const { data, error } = await supabase
-      .from('snapshots')
-      .select('run_id, checked_at')
-      .order('checked_at', { ascending: false })
-      .limit(5000);
-
-    if (error) {
-      console.error(`❌ No se pudo obtener runs de snapshots: ${error.message}`);
-      return [null, null];
-    }
-    const seen = [];
-    for (const row of (data || [])) {
-      if (row.run_id && !seen.includes(row.run_id)) seen.push(row.run_id);
-      if (seen.length >= 2) break;
-    }
-    if (seen.length < 2) {
-      console.warn(`⚠️  Solo ${seen.length} run_id(s) en snapshots — insuficiente para comparar`);
-      return [null, null];
-    }
-    const toRun = id => ({ run_id: id, total_items: '?', finished_at: id });
-    console.log(`  [snapshots fallback] Run actual:   ${seen[0]}`);
-    console.log(`  [snapshots fallback] Run anterior: ${seen[1]}`);
-    return [toRun(seen[0]), toRun(seen[1])];
-  }
+// ─── Sellers activos ──────────────────────────────────────────────────────────
+async function getActiveSellers() {
+  const { data, error } = await supabase
+    .from('sellers')
+    .select('seller_id, nombre_real, nickname')
+    .eq('activo', true);
+  if (error) throw new Error(`getActiveSellers: ${error.message}`);
+  return data || [];
 }
 
-// ─── Obtener {item_id → seller_id} para un run ────────────────────────────────
-async function getItemsForRun(runId) {
-  const items = {};
+// ─── 2 run_ids más recientes para un seller, con timestamps ──────────────────
+async function getLastTwoRunIds(sellerId) {
+  const { data, error } = await supabase
+    .from('snapshots')
+    .select('run_id, checked_at')
+    .eq('seller_id', String(sellerId))
+    .order('checked_at', { ascending: false })
+    .limit(5000);
+
+  if (error) throw new Error(`getLastTwoRunIds(${sellerId}): ${error.message}`);
+
+  const seen = [];
+  const ts   = {};
+  for (const row of (data || [])) {
+    if (row.run_id && !seen.includes(row.run_id)) {
+      seen.push(row.run_id);
+      ts[row.run_id] = row.checked_at;
+    }
+    if (seen.length >= 2) break;
+  }
+  return { runIds: seen, ts };
+}
+
+// ─── Items de un seller en un run concreto (paginado, deduplicado) ────────────
+async function getItemSet(sellerId, runId) {
+  const items    = new Set();
   const pageSize = 1000;
-  let offset = 0;
+  let   offset   = 0;
 
   while (true) {
     const { data, error } = await supabase
       .from('snapshots')
-      .select('item_id, meli_item_id, seller_id')
+      .select('item_id, meli_item_id')
+      .eq('seller_id', String(sellerId))
       .eq('run_id', runId)
       .range(offset, offset + pageSize - 1);
 
-    if (error) throw new Error(`getItemsForRun(${runId}): ${error.message}`);
+    if (error) throw new Error(`getItemSet(${sellerId}, ${runId}): ${error.message}`);
     const batch = data || [];
-    for (const snap of batch) {
-      const iid = snap.item_id || snap.meli_item_id;
-      if (iid && !(iid in items)) items[iid] = snap.seller_id;
+    for (const row of batch) {
+      const id = row.item_id || row.meli_item_id;
+      if (id) items.add(id);
     }
     if (batch.length < pageSize) break;
     offset += pageSize;
@@ -136,256 +93,182 @@ async function getItemsForRun(runId) {
   return items;
 }
 
-// ─── Verificar si ya se detectó para este run ─────────────────────────────────
-async function alreadyDetected(runId) {
-  try {
-    const { data } = await supabase
-      .from('bajas_detectadas')
-      .select('id')
-      .eq('run_id', runId)
-      .limit(1);
-    return (data || []).length > 0;
-  } catch (_) {
-    return false;
-  }
+// ─── Idempotencia: ¿ya guardamos desaparecidos para este seller en este par de runs? ──
+// Verifica si alguno de los items desaparecidos ya existe en bajas_detectadas
+// para este seller con tipo='desaparecido_no_confirmado'.
+async function alreadyDetectedSeller(sellerId, desaparecidos) {
+  if (!desaparecidos.length) return false;
+  const sample = desaparecidos.slice(0, 5);
+  const { data, error } = await supabase
+    .from('bajas_detectadas')
+    .select('item_id')
+    .eq('seller_id', String(sellerId))
+    .eq('tipo', 'desaparecido_no_confirmado')
+    .in('item_id', sample)
+    .limit(1);
+  if (error) return false; // si no se puede verificar, dejamos pasar
+  return (data?.length ?? 0) > 0;
 }
 
-// ─── Helper: query in() por lotes para evitar URLs largas ────────────────────
-async function queryInBatches(table, select, filters, idField, ids) {
-  const CHUNK = 100;
-  const results = [];
-  for (let i = 0; i < ids.length; i += CHUNK) {
-    const chunk = ids.slice(i, i + CHUNK);
-    let q = supabase.from(table).select(select).in(idField, chunk);
-    for (const [col, val] of Object.entries(filters)) q = q.eq(col, val);
-    const { data, error } = await q;
-    if (error) throw error;
-    results.push(...(data || []));
+// ─── Procesar un seller ────────────────────────────────────────────────────────
+async function processSeller(seller) {
+  const sellerId = String(seller.seller_id);
+  const name     = seller.nombre_real || seller.nickname || sellerId;
+
+  console.log(`\n${SEP2}`);
+  console.log(`Seller: ${name}  (id: ${sellerId})`);
+
+  // 1. Runs
+  const { runIds, ts } = await getLastTwoRunIds(sellerId);
+
+  if (runIds.length < 2) {
+    console.log(`  ⏭️  Solo ${runIds.length} run(s) — se necesitan 2 para comparar. Salteando.`);
+    return null;
   }
-  return results;
+
+  const [runActual, runAnterior] = runIds;
+  console.log(`  run_actual:   ${runActual}  (${(ts[runActual]  || '').slice(0, 19)})`);
+  console.log(`  run_anterior: ${runAnterior}  (${(ts[runAnterior] || '').slice(0, 19)})`);
+
+  // 2. Sets de items
+  const setActual   = await getItemSet(sellerId, runActual);
+  const setAnterior = await getItemSet(sellerId, runAnterior);
+
+  console.log(`  items run_actual:   ${setActual.size}`);
+  console.log(`  items run_anterior: ${setAnterior.size}  ← estos son los desaparecidos (UPSERT)`);
+
+  // 3. Desaparecidos
+  // Por diseño UPSERT: setAnterior = items que ya no están en setActual.
+  // No hace falta restar — son disjuntos.
+  const desaparecidos = [...setAnterior];
+
+  console.log(`  desaparecidos: ${desaparecidos.length}`);
+
+  // 4. Muestra auditable
+  if (desaparecidos.length > 0) {
+    const muestra = desaparecidos.slice(0, 8).join(', ');
+    console.log(`  muestra desaparecidos: ${muestra}${desaparecidos.length > 8 ? ` ... (${desaparecidos.length - 8} más)` : ''}`);
+  }
+
+  return { sellerId, name, runActual, runAnterior, setActual, setAnterior, desaparecidos };
 }
 
-// ─── Items que ya fueron registrados en bajas_detectadas (cualquier tipo) ─────
-async function getPreviouslyRegistered(itemIds) {
-  if (!itemIds.length) return new Set();
-  try {
-    const data = await queryInBatches('bajas_detectadas', 'item_id', {}, 'item_id', itemIds);
-    return new Set(data.map(r => r.item_id));
-  } catch (e) {
-    console.warn(`  ⚠️  No se pudo consultar registros previos: ${e.message}`);
-    return new Set();
-  }
-}
+// ─── Guardar en bajas_detectadas ──────────────────────────────────────────────
+async function saveChanges(rows) {
+  if (!rows.length) return 0;
 
-// ─── Items cuyo ÚLTIMO estado en bajas_detectadas es 'desaparecido_no_confirmado'
-// No basta con que alguna vez hayan desaparecido: si ya fueron registrados como
-// 'reaparecido' o 'nuevo' en un run posterior, se consideran estables.
-async function getPreviouslyDisappeared(itemIds) {
-  if (!itemIds.length) return new Set();
-  try {
-    // Traer item_id, tipo y fecha de todas las entradas para estos items
-    const data = await queryInBatches(
-      'bajas_detectadas', 'item_id, tipo, fecha_deteccion', {}, 'item_id', itemIds
-    );
-
-    // Para cada item, quedarse solo con la entrada más reciente
-    const latestByItem = {};
-    for (const r of data) {
-      if (!latestByItem[r.item_id] || r.fecha_deteccion > latestByItem[r.item_id].fecha_deteccion) {
-        latestByItem[r.item_id] = r;
-      }
-    }
-
-    // Solo items cuyo último estado es 'desaparecido_no_confirmado'
-    return new Set(
-      Object.values(latestByItem)
-        .filter(r => r.tipo === 'desaparecido_no_confirmado')
-        .map(r => r.item_id)
-    );
-  } catch (e) {
-    console.warn(`  ⚠️  No se pudo consultar reaparecidos: ${e.message}`);
-    return new Set();
-  }
-}
-
-// ─── Comparar y clasificar cambios ────────────────────────────────────────────
-async function detectChanges(currentItems, previousItems, currentRunId) {
-  /**
-   * Con el diseño UPSERT:
-   * - currentItems  = todos los items visibles en el run actual (run_id = current)
-   * - previousItems = items con run_id = previous = items que DESAPARECIERON
-   *                   (no fueron vistos en el run actual → no se actualizaron)
-   *
-   * Para "nuevo" y "reaparecido":
-   *   - Un item en currentItems que NO está en bajas_detectadas (nunca visto) → nuevo
-   *   - Un item en currentItems que fue desaparecido_no_confirmado → reaparecido
-   *   - Un item en currentItems ya registrado como "nuevo" en algún ciclo → estable → ignorar
-   */
-  const cambios = [];
-  const now = new Date().toISOString();
-
-  const currentIds  = new Set(Object.keys(currentItems));
-  const previousIds = new Set(Object.keys(previousItems));
-
-  // ── DESAPARECIDOS: items con run_id = previous (no actualizados al run actual)
-  for (const iid of previousIds) {
-    cambios.push({
-      tipo:            'desaparecido_no_confirmado',
-      item_id:         iid,
-      meli_item_id:    iid,
-      seller_id:       previousItems[iid],
-      run_id:          currentRunId,
-      fecha_deteccion: now,
-    });
-  }
-
-  // ── NUEVOS / REAPARECIDOS: items en current que no están en previous
-  //    (con UPSERT, casi todos los current items no están en previous, porque
-  //    los que siguen activos se upsertaron al run actual; solo los desaparecidos
-  //    quedaron con el run anterior)
-  const candidatosNuevos = [...currentIds].filter(iid => !previousIds.has(iid));
-  const [registrados, desaparecidos] = await Promise.all([
-    getPreviouslyRegistered(candidatosNuevos),
-    getPreviouslyDisappeared(candidatosNuevos),
-  ]);
-
-  for (const iid of candidatosNuevos) {
-    let tipo;
-    if (desaparecidos.has(iid)) {
-      tipo = 'reaparecido';
-    } else if (!registrados.has(iid)) {
-      tipo = 'nuevo';
-    } else {
-      continue; // estable — ya fue registrado, no es nuevo ni reaparecido
-    }
-    cambios.push({
-      tipo,
-      item_id:         iid,
-      meli_item_id:    iid,
-      seller_id:       currentItems[iid],
-      run_id:          currentRunId,
-      fecha_deteccion: now,
-    });
-  }
-
-  return cambios;
-}
-
-// ─── Guardar cambios en bajas_detectadas ──────────────────────────────────────
-async function guardarCambios(cambios) {
-  if (!cambios.length) {
-    console.log('ℹ️  Sin cambios para guardar');
-    return 0;
-  }
-
-  console.log(`\n💾 Insertando ${cambios.length} cambios en bajas_detectadas...`);
-
-  const rows = cambios.map(c => ({
-    seller_id:       c.seller_id,
-    item_id:         c.item_id,
-    meli_item_id:    c.meli_item_id,
-    tipo:            c.tipo,
-    run_id:          c.run_id,
-    fecha_deteccion: c.fecha_deteccion,
-  }));
-
-  // Bulk insert
   const { error } = await supabase.from('bajas_detectadas').insert(rows);
-  if (!error) {
-    console.log(`✅ ${rows.length} cambios guardados`);
-    return rows.length;
-  }
+  if (!error) return rows.length;
 
-  // Fallback: de a uno
-  console.warn(`⚠️  Bulk insert falló (${error.message}), intentando de a uno...`);
+  console.warn(`  ⚠️  Bulk insert falló (${error.message}), insertando de a uno...`);
   let ok = 0;
   for (const row of rows) {
     const { error: e2 } = await supabase.from('bajas_detectadas').insert([row]);
     if (!e2) ok++;
-    else console.warn(`  ❌ ${row.item_id} [${row.tipo}]: ${e2.message}`);
+    else console.warn(`    ❌ ${row.item_id} [${row.tipo}]: ${e2.message}`);
   }
   return ok;
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 (async () => {
+  const DET_RUN_ID = `det_${Date.now()}`;
+  const NOW        = new Date().toISOString();
+
   console.log(`\n${SEP}`);
-  console.log('DETECTOR DE CAMBIOS MLU — INICIO');
-  console.log(`Ejecutado: ${new Date().toISOString()}`);
-  console.log(`${SEP}\n`);
+  console.log('DETECTOR BAJAS v4 — INICIO');
+  console.log(`det_run_id: ${DET_RUN_ID}`);
+  console.log(`timestamp:  ${NOW}`);
+  console.log(`${SEP}`);
 
-  const [currentRun, previousRun] = await getLastTwoValidRuns();
-
-  if (!currentRun || !previousRun) {
-    console.log('ℹ️  Sin suficientes runs válidos para comparar — saliendo sin error');
-    process.exit(0);
-  }
-
-  const currentRunId  = currentRun.run_id;
-  const previousRunId = previousRun.run_id;
-
-  // Evitar duplicados por mismo run
-  if (await alreadyDetected(currentRunId)) {
-    console.warn(`⚠️  Ya se detectaron cambios para ${currentRunId} — saltando`);
-    process.exit(0);
-  }
-
-  // Cargar items
-  console.log(`\n📥 Items del run actual (${currentRunId})...`);
-  let currentItems;
+  let sellers;
   try {
-    currentItems = await getItemsForRun(currentRunId);
+    sellers = await getActiveSellers();
+    console.log(`\nSellers activos: ${sellers.length}`);
   } catch (e) {
     console.error(`❌ ${e.message}`);
     process.exit(1);
   }
-  console.log(`   ${Object.keys(currentItems).length} items únicos`);
 
-  console.log(`\n📥 Items del run anterior (${previousRunId})...`);
-  let previousItems;
-  try {
-    previousItems = await getItemsForRun(previousRunId);
-  } catch (e) {
-    console.error(`❌ ${e.message}`);
-    process.exit(1);
-  }
-  console.log(`   ${Object.keys(previousItems).length} items únicos`);
+  const results = [];
 
-  // Comparar
-  console.log('\n🔍 Comparando...\n');
-  const cambios = await detectChanges(currentItems, previousItems, currentRunId);
-
-  // Resumen
-  console.log(`\n${SEP}`);
-  console.log('RESUMEN DE CAMBIOS DETECTADOS');
-  console.log(SEP);
-  const tipos = {};
-  for (const c of cambios) tipos[c.tipo] = (tipos[c.tipo] || 0) + 1;
-
-  if (Object.keys(tipos).length) {
-    for (const tipo of Object.keys(tipos).sort()) {
-      console.log(`  ${tipo.padEnd(35)}: ${String(tipos[tipo]).padStart(4)}`);
+  for (const seller of sellers) {
+    try {
+      const r = await processSeller(seller);
+      if (r) results.push(r);
+    } catch (e) {
+      console.error(`  ❌ Error en seller ${seller.seller_id}: ${e.message}`);
     }
-    console.log(`  ${'TOTAL'.padEnd(35)}: ${String(cambios.length).padStart(4)}`);
-  } else {
-    console.log('  Sin cambios detectados entre los dos runs');
   }
+
+  // ── Resumen tabular ──────────────────────────────────────────────────────────
+  console.log(`\n${SEP}`);
+  console.log('RESUMEN POR SELLER');
+  console.log(SEP);
+  console.log(
+    'Seller'.padEnd(38) + ' | ' +
+    'ant'.padStart(4)   + ' | ' +
+    'act'.padStart(4)   + ' | ' +
+    'desap'.padStart(5)
+  );
+  console.log(SEP2);
+
+  let totDes = 0;
+  for (const r of results) {
+    console.log(
+      r.name.slice(0, 37).padEnd(38) + ' | ' +
+      String(r.setAnterior.size).padStart(4) + ' | ' +
+      String(r.setActual.size).padStart(4)   + ' | ' +
+      String(r.desaparecidos.length).padStart(5)
+    );
+    totDes += r.desaparecidos.length;
+  }
+  console.log(SEP2);
+  console.log(
+    'TOTAL'.padEnd(38) + ' | ' +
+    '    '             + ' | ' +
+    '    '             + ' | ' +
+    String(totDes).padStart(5)
+  );
   console.log(SEP);
 
-  // Detalle (primeros 30)
-  if (cambios.length) {
-    console.log('\nDetalle (primeros 30):');
-    cambios.slice(0, 30).forEach(c =>
-      console.log(`  [${c.tipo}] ${c.item_id} (seller: ${c.seller_id})`)
-    );
-    if (cambios.length > 30) console.log(`  ... y ${cambios.length - 30} más`);
+  // ── Guardar (con idempotencia por seller) ────────────────────────────────────
+  let totalSaved   = 0;
+  let totalSkipped = 0;
+
+  for (const r of results) {
+    if (!r.desaparecidos.length) continue;
+
+    // Chequeo de idempotencia: si ya existen entradas para este seller+items → saltar
+    const alreadyDone = await alreadyDetectedSeller(r.sellerId, r.desaparecidos);
+    if (alreadyDone) {
+      console.log(`  ⏭️  ${r.name}: detección ya guardada, salteando.`);
+      totalSkipped++;
+      continue;
+    }
+
+    const rows = r.desaparecidos.map(id => ({
+      seller_id:       r.sellerId,
+      item_id:         id,
+      meli_item_id:    id,
+      tipo:            'desaparecido_no_confirmado',
+      run_id:          DET_RUN_ID,
+      fecha_deteccion: NOW,
+    }));
+
+    console.log(`\nGuardando ${rows.length} desaparecidos para ${r.name}...`);
+    const saved = await saveChanges(rows);
+    console.log(`  ✅ ${saved}/${rows.length} guardados`);
+    totalSaved += saved;
   }
 
-  // Guardar
-  const insertados = await guardarCambios(cambios);
-
+  // ── Cierre ───────────────────────────────────────────────────────────────────
   console.log(`\n${SEP}`);
-  console.log(`✅ DETECTOR COMPLETADO — ${insertados} cambios guardados`);
+  console.log('DETECTOR COMPLETADO');
+  console.log(`  Sellers procesados: ${results.length}/${sellers.length}`);
+  console.log(`  Desaparecidos:      ${totDes}`);
+  console.log(`  Guardados:          ${totalSaved}`);
+  console.log(`  Salteados (ya guardados): ${totalSkipped}`);
   console.log(`${SEP}\n`);
 
   process.exit(0);
