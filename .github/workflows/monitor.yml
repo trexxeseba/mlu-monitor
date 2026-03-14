@@ -69,6 +69,20 @@ jobs:
           echo "⚠️  El run fue marcado como inválido. El detector NO corrió."
           echo "    Revisar output/validate.log y output/monitor.log para el motivo."
 
+      # ── Step 4: Notificación email (solo si hubo detecciones) ───────────────
+      - name: "4/3 — Notificación email"
+        if: steps.validate.outcome == 'success'
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
+          NOTIFY_TO: undiaes@gmail.com
+        run: |
+          set -o pipefail
+          node src/notify_email.js 2>&1 | tee output/notify.log
+
       # ── Subir artifacts ──────────────────────────────────────────────────────
       # Siempre se suben — incluso si el monitor falla — para poder debuggear.
       # Los logs NO se commitean al repo.
