@@ -177,12 +177,31 @@ async function getPreviouslyRegistered(itemIds) {
   }
 }
 
-// ─── Items que fueron registrados como desaparecidos ─────────────────────────
+// ─── Items cuyo ÚLTIMO estado en bajas_detectadas es 'desaparecido_no_confirmado'
+// No basta con que alguna vez hayan desaparecido: si ya fueron registrados como
+// 'reaparecido' o 'nuevo' en un run posterior, se consideran estables.
 async function getPreviouslyDisappeared(itemIds) {
   if (!itemIds.length) return new Set();
   try {
-    const data = await queryInBatches('bajas_detectadas', 'item_id', { tipo: 'desaparecido_no_confirmado' }, 'item_id', itemIds);
-    return new Set(data.map(r => r.item_id));
+    // Traer item_id, tipo y fecha de todas las entradas para estos items
+    const data = await queryInBatches(
+      'bajas_detectadas', 'item_id, tipo, fecha_deteccion', {}, 'item_id', itemIds
+    );
+
+    // Para cada item, quedarse solo con la entrada más reciente
+    const latestByItem = {};
+    for (const r of data) {
+      if (!latestByItem[r.item_id] || r.fecha_deteccion > latestByItem[r.item_id].fecha_deteccion) {
+        latestByItem[r.item_id] = r;
+      }
+    }
+
+    // Solo items cuyo último estado es 'desaparecido_no_confirmado'
+    return new Set(
+      Object.values(latestByItem)
+        .filter(r => r.tipo === 'desaparecido_no_confirmado')
+        .map(r => r.item_id)
+    );
   } catch (e) {
     console.warn(`  ⚠️  No se pudo consultar reaparecidos: ${e.message}`);
     return new Set();
