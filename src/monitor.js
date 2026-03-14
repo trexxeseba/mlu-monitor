@@ -45,7 +45,7 @@ async function scrapeSellerIds(sellerId) {
   const targetUrl = encodeURIComponent(
     `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`
   );
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&asp=true&render_js=true&rendering_wait=5000&country=uy`;
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&render_js=true&rendering_wait=3000&country=uy`;
 
   console.log(`  📡 Scrapfly → seller ${sellerId}...`);
   const res = await httpGet('api.scrapfly.io', path);
