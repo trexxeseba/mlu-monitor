@@ -13,6 +13,10 @@
  * El detector solo corre si este script retorna 0.
  */
 
+// Mínimo ratio de sellers exitosos para considerar un run válido.
+// Tunear acá si hay un seller que falla recurrentemente.
+const MIN_SUCCESS_RATIO = 0.70;
+
 ['SUPABASE_URL', 'SUPABASE_KEY'].forEach(k => {
   if (!process.env[k]) {
     console.error(`FATAL: falta variable ${k}`);
@@ -100,18 +104,38 @@ const SEP = '─'.repeat(70);
     process.exit(1);
   }
 
-  // En fallback execution_logs, 'partial' se acepta como válido para la prueba
-  const isValid = data.status === 'valid' || (data._source === 'execution_logs' && data.status === 'partial');
-  if (!isValid) {
-    console.error(`❌ RUN INVÁLIDO — abortando pipeline de detección`);
-    console.error(`   Motivo: ${data.invalid_reason || data.status}\n`);
-    process.exit(2);
+  // ── Validación por status (monitor_runs) ─────────────────────────────────
+  if (data._source !== 'execution_logs') {
+    if (data.status !== 'valid') {
+      console.error(`❌ RUN INVÁLIDO — abortando pipeline de detección`);
+      console.error(`   Motivo: ${data.invalid_reason || data.status}\n`);
+      process.exit(2);
+    }
   }
 
+  // ── Validación por métricas (execution_logs fallback) ────────────────────
+  // El status 'partial' en execution_logs = run inválido en monitor.js.
+  // No se acepta 'partial' como válido. Se valida directamente con los campos
+  // numéricos para evitar que NaN pase silenciosamente como válido.
   if (data._source === 'execution_logs') {
+    const success = Number(data.sellers_ok);
+    const total   = Number(data.sellers_total);
+
+    if (!Number.isFinite(success) || !Number.isFinite(total) || total === 0) {
+      console.error('[validate_run] execution_logs sin métricas válidas — tratando como INVALID\n');
+      process.exit(2);
+    }
+
+    if (success === 0 || (success / total) < MIN_SUCCESS_RATIO) {
+      console.error(`[validate_run] run inválido: ${success}/${total} sellers OK (mínimo ${MIN_SUCCESS_RATIO * 100}%)\n`);
+      process.exit(2);
+    }
+
     console.log(`⚠️  Usando execution_logs como fuente (monitor_runs aún no existe)`);
     console.log(`   Aplicar docs/sql/001_monitor_runs.sql para activar validación completa`);
+    console.log(`   sellers OK: ${success}/${total} (${((success/total)*100).toFixed(1)}%)`);
   }
+
   console.log(`✅ Run válido — el detector puede continuar\n`);
   process.exit(0);
 })();

@@ -45,8 +45,10 @@ function httpGet(hostname, path) {
 // Si falla con 422 (pool agotado), reintenta con país alternativo tras delay.
 async function scrapeSellerIds(sellerId) {
   const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
-  // asp=true + country=uy: proxies residenciales uruguayos con anti-bot activo
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&asp=false&render_js=false&country=uy`;
+  // Sin country= : Scrapfly elige cualquier proxy disponible del pool global.
+  // country=uy fue removido porque el pool residencial UY del plan DISCOVERY
+  // se agota con 3 requests simultáneos (HTTP 422).
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&asp=false&render_js=false`;
 
   console.log(`  📡 Scrapfly → seller ${sellerId}...`);
 
@@ -61,6 +63,12 @@ async function scrapeSellerIds(sellerId) {
   if (!parsed.result?.success) {
     throw new Error(`Scrapfly fallo: ${parsed.result?.reason || 'sin razón'} (HTTP ${parsed.result?.status_code})`);
   }
+
+  // Loggear país del proxy efectivamente usado
+  const proxyCountry = parsed.result?.context?.proxy?.country
+    || parsed.context?.proxy?.country
+    || 'desconocido';
+  console.log(`  🌐 proxy country=${proxyCountry}`);
 
   const html = parsed.result.content || '';
 
