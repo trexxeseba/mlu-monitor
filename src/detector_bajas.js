@@ -139,12 +139,14 @@ async function processSeller(seller) {
   console.log(`  items run_actual:   ${setActual.size}`);
   console.log(`  items run_anterior: ${setAnterior.size}  ← estos son los desaparecidos (UPSERT)`);
 
-  // 3. Desaparecidos
-  // Por diseño UPSERT: setAnterior = items que ya no están en setActual.
-  // No hace falta restar — son disjuntos.
+  // 3. Desaparecidos y nuevos
+  // Por diseño UPSERT: setAnterior = items que ya no están en setActual (bajas).
+  // Nuevos = items en setActual que no estaban en ningún run anterior de este seller.
   const desaparecidos = [...setAnterior];
+  const nuevos = [...setActual].filter(id => !setAnterior.has(id) && id.startsWith('MLU'));
 
   console.log(`  desaparecidos: ${desaparecidos.length}`);
+  console.log(`  nuevos:        ${nuevos.length}`);
 
   // 4. Muestra auditable
   if (desaparecidos.length > 0) {
@@ -152,7 +154,7 @@ async function processSeller(seller) {
     console.log(`  muestra desaparecidos: ${muestra}${desaparecidos.length > 8 ? ` ... (${desaparecidos.length - 8} más)` : ''}`);
   }
 
-  return { sellerId, name, runActual, runAnterior, setActual, setAnterior, desaparecidos };
+  return { sellerId, name, runActual, runAnterior, setActual, setAnterior, desaparecidos, nuevos };
 }
 
 // ─── Guardar en bajas_detectadas ──────────────────────────────────────────────
@@ -216,14 +218,17 @@ async function saveChanges(rows) {
   console.log(SEP2);
 
   let totDes = 0;
+  let totNuevos = 0;
   for (const r of results) {
     console.log(
       r.name.slice(0, 37).padEnd(38) + ' | ' +
       String(r.setAnterior.size).padStart(4) + ' | ' +
       String(r.setActual.size).padStart(4)   + ' | ' +
-      String(r.desaparecidos.length).padStart(5)
+      String(r.desaparecidos.length).padStart(5) + ' | ' +
+      String(r.nuevos.length).padStart(6)
     );
     totDes += r.desaparecidos.length;
+    totNuevos += r.nuevos.length;
   }
   console.log(SEP2);
   console.log(
@@ -249,16 +254,18 @@ async function saveChanges(rows) {
       continue;
     }
 
-    const rows = r.desaparecidos.map(id => ({
-      seller_id:       r.sellerId,
-      item_id:         id,
-      meli_item_id:    id,
-      tipo:            'desaparecido_no_confirmado',
-      run_id:          DET_RUN_ID,
-      fecha_deteccion: NOW,
-    }));
+    const rows = [
+      ...r.desaparecidos.map(id => ({
+        seller_id: r.sellerId, item_id: id, meli_item_id: id,
+        tipo: 'desaparecido_no_confirmado', run_id: DET_RUN_ID, fecha_deteccion: NOW,
+      })),
+      ...r.nuevos.map(id => ({
+        seller_id: r.sellerId, item_id: id, meli_item_id: id,
+        tipo: 'nuevo', run_id: DET_RUN_ID, fecha_deteccion: NOW,
+      })),
+    ];
 
-    console.log(`\nGuardando ${rows.length} desaparecidos para ${r.name}...`);
+    console.log(`\nGuardando ${r.desaparecidos.length} bajas + ${r.nuevos.length} altas para ${r.name}...`);
     const saved = await saveChanges(rows);
     console.log(`  ✅ ${saved}/${rows.length} guardados`);
     totalSaved += saved;

@@ -1,19 +1,21 @@
 'use strict';
 
 /**
- * notify_email.js
+ * notify_email.js — v2
  *
- * Lee las detecciones del último run válido desde Supabase y manda
- * un email HTML con 3 secciones via Resend API.
+ * Lee TODAS las detecciones del día de hoy desde bajas_detectadas,
+ * agrupa por seller y manda un email HTML con secciones claras:
+ *   📉 BAJADAS (desaparecido_no_confirmado) — ítem ya no está en el listado
+ *   📈 SUBIDAS (nuevo)                      — ítem apareció hoy
  *
  * Variables de entorno requeridas:
  *   SUPABASE_URL, SUPABASE_KEY  — credenciales Supabase
- *   RESEND_API_KEY              — API key de Resend (re_xxxx...)
- *   NOTIFY_FROM                 — dirección "from" (ej: monitor@tudominio.com)
- *   NOTIFY_TO                   — destino (default: undiaes@gmail.com)
+ *   RESEND_API_KEY              — API key de Resend
+ *   NOTIFY_FROM                 — dirección "from" verificada en Resend
+ *   NOTIFY_TO                   — destinatario (default: undiaes@gmail.com)
  *
  * Códigos de salida:
- *   0 → email enviado (o sin cambios, nada que notificar)
+ *   0 → email enviado (o sin cambios)
  *   1 → error técnico
  */
 
@@ -24,16 +26,36 @@
 const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
+const supabase   = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const RESEND_KEY = process.env.RESEND_API_KEY;
+const FROM       = process.env.NOTIFY_FROM || 'MLU Monitor <onboarding@resend.dev>';
+const TO         = process.env.NOTIFY_TO   || 'undiaes@gmail.com';
+
+const SEP = '═'.repeat(70);
+
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
-function httpGet(hostname, path, extraHeaders = {}) {
+function httpPost(hostname, path, headers, bodyStr) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname, path, method: 'POST',
+      headers: { 'Content-Length': Buffer.byteLength(bodyStr), ...headers },
+    }, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout 30s')); });
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+function httpGet(hostname, path) {
   return new Promise((resolve, reject) => {
     const req = https.request({
       hostname, path, method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; MLUMonitor/2.0)',
-        'Accept':     'application/json',
-        ...extraHeaders,
-      },
+      headers: { 'User-Agent': 'MLUMonitor/2.0', 'Accept': 'application/json' },
     }, res => {
       let data = '';
       res.on('data', c => data += c);
@@ -45,65 +67,30 @@ function httpGet(hostname, path, extraHeaders = {}) {
   });
 }
 
-const supabase   = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const RESEND_KEY = process.env.RESEND_API_KEY;
-const FROM       = process.env.NOTIFY_FROM || 'MLU Monitor <onboarding@resend.dev>';
-const TO         = process.env.NOTIFY_TO   || 'undiaes@gmail.com';
+// ─── Detecciones de hoy ───────────────────────────────────────────────────────
+async function getTodayDetections() {
+  // Rango UTC del día de hoy en Uruguay (UTC-3): desde 03:00 UTC hasta mañana 03:00 UTC
+  const now     = new Date();
+  const todayUY = new Date(now.toLocaleString('en-US', { timeZone: 'America/Montevideo' }));
+  todayUY.setHours(0, 0, 0, 0);
+  const startUTC = new Date(todayUY.getTime() + 3 * 60 * 60 * 1000).toISOString(); // 03:00 UTC
+  const endUTC   = new Date(todayUY.getTime() + 27 * 60 * 60 * 1000).toISOString(); // +24h
 
-const SEP = '═'.repeat(70);
+  console.log(`📅 Buscando detecciones entre ${startUTC} y ${endUTC}`);
 
-// ─── Obtener el último run válido ─────────────────────────────────────────────
-async function getLatestValidRunId() {
-  // Intento 1: monitor_runs
-  {
-    const { data, error } = await supabase
-      .from('monitor_runs')
-      .select('run_id, finished_at, sellers_ok, sellers_total, total_items')
-      .eq('status', 'valid')
-      .order('finished_at', { ascending: false })
-      .limit(1);
-
-    if (!error && data?.length) return data[0];
-  }
-
-  // Intento 2: execution_logs
-  {
-    const { data, error } = await supabase
-      .from('execution_logs')
-      .select('run_id, executed_at, sellers_success, sellers_total, items_processed')
-      .eq('status', 'success')
-      .order('executed_at', { ascending: false })
-      .limit(1);
-
-    if (!error && data?.length) {
-      const r = data[0];
-      return {
-        run_id:        r.run_id,
-        finished_at:   r.executed_at,
-        sellers_ok:    r.sellers_success,
-        sellers_total: r.sellers_total,
-        total_items:   r.items_processed,
-      };
-    }
-  }
-
-  throw new Error('No se encontró ningún run válido');
-}
-
-// ─── Leer detecciones del run ──────────────────────────────────────────────────
-async function getDetections(runId) {
   const { data, error } = await supabase
     .from('bajas_detectadas')
-    .select('tipo, item_id, seller_id, fecha_deteccion')
-    .eq('run_id', runId)
-    .order('tipo')
-    .order('seller_id');
+    .select('tipo, item_id, seller_id, fecha_deteccion, run_id')
+    .gte('fecha_deteccion', startUTC)
+    .lt('fecha_deteccion', endUTC)
+    .order('seller_id')
+    .order('tipo');
 
-  if (error) throw new Error(`getDetections: ${error.message}`);
+  if (error) throw new Error(`getTodayDetections: ${error.message}`);
   return data || [];
 }
 
-// ─── Leer nombres de sellers ───────────────────────────────────────────────────
+// ─── Nombres de sellers ───────────────────────────────────────────────────────
 async function getSellerNames(sellerIds) {
   if (!sellerIds.length) return {};
   const { data } = await supabase
@@ -118,31 +105,24 @@ async function getSellerNames(sellerIds) {
   return map;
 }
 
-// ─── Obtener título y precio de items via MLU API pública ─────────────────────
-// Endpoint: GET https://api.mercadolibre.com/items?ids=MLU1,MLU2,...
-// Sin auth, máximo 20 IDs por request.
+// ─── Detalles de ítems via MLU API pública ────────────────────────────────────
 async function fetchItemDetails(itemIds) {
   const details = {};
   if (!itemIds.length) return details;
 
-  // Test rápido con 1 ítem para detectar bloqueo de IP antes de iterar
-  const testId  = itemIds[0];
-  const testRes = await httpGet('api.mercadolibre.com', `/items/${testId}`).catch(e => ({ status: 0, body: e.message }));
+  // Test rápido para detectar bloqueo de IP
+  const testRes = await httpGet('api.mercadolibre.com', `/items/${itemIds[0]}`).catch(() => ({ status: 0 }));
   if (testRes.status !== 200) {
-    console.warn(`  ⚠️  MLU API no accesible desde este runner (HTTP ${testRes.status}) — email sin títulos`);
+    console.warn(`  ⚠️  MLU API no accesible (HTTP ${testRes.status}) — email sin títulos`);
     return details;
   }
 
   const CHUNK = 20;
   for (let i = 0; i < itemIds.length; i += CHUNK) {
     const chunk = itemIds.slice(i, i + CHUNK);
-    const path  = `/items?ids=${chunk.join(',')}`;
     try {
-      const res = await httpGet('api.mercadolibre.com', path);
-      if (res.status !== 200) {
-        console.warn(`  ⚠️  MLU API chunk ${i/CHUNK+1}: HTTP ${res.status}`);
-        continue;
-      }
+      const res = await httpGet('api.mercadolibre.com', `/items?ids=${chunk.join(',')}`);
+      if (res.status !== 200) continue;
       const rows = JSON.parse(res.body);
       for (const row of rows) {
         if (row.code === 200 && row.body?.id) {
@@ -160,172 +140,160 @@ async function fetchItemDetails(itemIds) {
   return details;
 }
 
-// ─── Construir tabla HTML ──────────────────────────────────────────────────────
-function buildTable(rows, sellerNames, itemDetails, emptyMsg) {
-  if (!rows.length) {
-    return `<p style="color:#888;font-style:italic;margin:8px 0">${emptyMsg}</p>`;
+// ─── Construir bloque HTML por seller ────────────────────────────────────────
+function buildSellerBlock(sellerName, bajadas, subidas, itemDetails) {
+  const total = bajadas.length + subidas.length;
+  if (total === 0) return '';
+
+  const itemLink = (itemId) => {
+    const url  = `https://articulo.mercadolibre.com.uy/-_${itemId}`;
+    const det  = itemDetails[itemId];
+    const label = det?.title
+      ? `${det.title}${det.price ? ` — ${det.price}` : ''}`
+      : itemId;
+    return `<li style="margin:4px 0"><a href="${url}" style="color:#1a73e8;text-decoration:none">${label}</a></li>`;
+  };
+
+  let html = `
+    <div style="border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:20px">
+      <h2 style="margin:0 0 14px;font-size:17px;color:#1a1a2e;border-bottom:2px solid #eee;padding-bottom:8px">
+        🏪 ${sellerName}
+        <span style="font-size:13px;font-weight:normal;color:#666;margin-left:8px">${total} cambios hoy</span>
+      </h2>`;
+
+  if (bajadas.length > 0) {
+    html += `
+      <div style="margin-bottom:14px">
+        <h3 style="margin:0 0 8px;font-size:14px;color:#fff;background:#c0392b;padding:6px 10px;border-radius:5px;display:inline-block">
+          📉 BAJADA — ${bajadas.length} ítem${bajadas.length !== 1 ? 's' : ''} ya no está${bajadas.length !== 1 ? 'n' : ''}
+        </h3>
+        <ul style="margin:6px 0 0;padding-left:20px">
+          ${bajadas.map(r => itemLink(r.item_id)).join('\n          ')}
+        </ul>
+      </div>`;
   }
 
-  // Agrupar por seller
-  const bySeller = {};
-  for (const r of rows) {
-    const key = String(r.seller_id);
-    if (!bySeller[key]) bySeller[key] = [];
-    bySeller[key].push(r);
+  if (subidas.length > 0) {
+    html += `
+      <div>
+        <h3 style="margin:0 0 8px;font-size:14px;color:#fff;background:#27ae60;padding:6px 10px;border-radius:5px;display:inline-block">
+          📈 SUBIDA — ${subidas.length} ítem${subidas.length !== 1 ? 's' : ''} nuevo${subidas.length !== 1 ? 's' : ''}
+        </h3>
+        <ul style="margin:6px 0 0;padding-left:20px">
+          ${subidas.map(r => itemLink(r.item_id)).join('\n          ')}
+        </ul>
+      </div>`;
   }
 
-  let html = '';
-  for (const [sellerId, items] of Object.entries(bySeller)) {
-    const name = sellerNames[sellerId] || sellerId;
-    html += `<p style="margin:12px 0 4px;font-weight:bold;color:#333">${name} (${items.length} ítems)</p>`;
-    html += '<ul style="margin:0 0 8px 0;padding-left:20px">';
-    for (const item of items) {
-      const url  = `https://articulo.mercadolibre.com.uy/-_${item.item_id}`;
-      const det  = itemDetails[item.item_id];
-      const label = det?.title
-        ? `${det.title}${det.price ? ` — ${det.price}` : ''}`
-        : item.item_id;
-      html += `<li style="margin:4px 0"><a href="${url}" style="color:#1a73e8;text-decoration:none">${label}</a></li>`;
-    }
-    html += '</ul>';
-  }
+  html += `\n    </div>`;
   return html;
 }
 
-// ─── Armar email HTML completo ─────────────────────────────────────────────────
-function buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames, itemDetails) {
-  const fecha = new Date(run.finished_at).toLocaleString('es-UY', { timeZone: 'America/Montevideo' });
+// ─── Armar email HTML ─────────────────────────────────────────────────────────
+function buildEmailHtml(detections, sellerNames, itemDetails) {
+  const fecha = new Date().toLocaleString('es-UY', { timeZone: 'America/Montevideo' });
 
-  const section = (emoji, title, color, rows, emptyMsg) => `
-    <div style="margin-bottom:28px">
-      <h2 style="margin:0 0 10px;padding:8px 12px;background:${color};border-radius:6px;font-size:16px;color:#fff">
-        ${emoji} ${title} (${rows.length})
-      </h2>
-      ${buildTable(rows, sellerNames, itemDetails, emptyMsg)}
-    </div>`;
+  // Agrupar por seller
+  const bySeller = {};
+  for (const d of detections) {
+    const key = String(d.seller_id);
+    if (!bySeller[key]) bySeller[key] = { bajadas: [], subidas: [] };
+    if (d.tipo === 'desaparecido_no_confirmado') bySeller[key].bajadas.push(d);
+    else if (d.tipo === 'nuevo')                 bySeller[key].subidas.push(d);
+  }
 
-  const total = desaparecidos.length + nuevos.length + reaparecidos.length;
+  const totalBajadas = detections.filter(d => d.tipo === 'desaparecido_no_confirmado').length;
+  const totalSubidas  = detections.filter(d => d.tipo === 'nuevo').length;
+
+  let sellerBlocks = '';
+  for (const [sellerId, { bajadas, subidas }] of Object.entries(bySeller)) {
+    const name = sellerNames[sellerId] || sellerId;
+    sellerBlocks += buildSellerBlock(name, bajadas, subidas, itemDetails);
+  }
 
   return `<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;color:#222">
+<body style="font-family:Arial,sans-serif;max-width:720px;margin:0 auto;padding:20px;color:#222;background:#f5f5f5">
 
-  <div style="background:#1a1a2e;color:#fff;padding:16px 20px;border-radius:8px;margin-bottom:24px">
-    <h1 style="margin:0;font-size:20px">MLU Monitor — Reporte de cambios</h1>
-    <p style="margin:6px 0 0;font-size:13px;color:#aaa">
-      Run: ${run.run_id} &nbsp;|&nbsp; ${fecha} &nbsp;|&nbsp;
-      Sellers: ${run.sellers_ok}/${run.sellers_total} OK &nbsp;|&nbsp;
-      Items totales: ${run.total_items}
-    </p>
+  <div style="background:#1a1a2e;color:#fff;padding:18px 22px;border-radius:10px;margin-bottom:24px">
+    <h1 style="margin:0;font-size:22px">📊 MLU Monitor — Reporte del día</h1>
+    <p style="margin:8px 0 0;font-size:13px;color:#aaa">${fecha}</p>
+    <div style="margin-top:12px;display:flex;gap:20px;font-size:15px">
+      <span>📉 <strong style="color:#e74c3c">${totalBajadas} BAJADAS</strong></span>
+      <span>📈 <strong style="color:#2ecc71">${totalSubidas} SUBIDAS</strong></span>
+    </div>
   </div>
 
-  ${total === 0
-    ? `<p style="font-size:15px;color:#555">Sin cambios detectados en este run.</p>`
-    : `
-      ${section('📉', 'POSIBLES VENTAS', '#c0392b', desaparecidos,
-        'Sin desapariciones en este run.')}
-      ${section('🆕', 'ÍTEMS NUEVOS', '#27ae60', nuevos,
-        'Sin ítems nuevos en este run.')}
-      ${section('🔄', 'REAPARICIONES', '#e67e22', reaparecidos,
-        'Sin reapariciones en este run.')}
-    `}
+  ${detections.length === 0
+    ? `<div style="background:#fff;border-radius:8px;padding:24px;text-align:center;color:#666;font-size:15px">
+         Sin cambios detectados hoy.
+       </div>`
+    : sellerBlocks}
 
-  <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-  <p style="font-size:11px;color:#aaa;text-align:center">
+  <hr style="border:none;border-top:1px solid #ddd;margin:24px 0">
+  <p style="font-size:11px;color:#999;text-align:center">
     Generado automáticamente por MLU Monitor · GitHub Actions
   </p>
 </body>
 </html>`;
 }
 
-// ─── Enviar email via Resend API ───────────────────────────────────────────────
-function sendEmail(subject, html) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ from: FROM, to: [TO], subject, html });
-
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path:     '/emails',
-      method:   'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_KEY}`,
-        'Content-Type':  'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => resolve({ status: res.statusCode, body: data }));
-    });
-
-    req.on('error', reject);
-    req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout 30s')); });
-    req.write(body);
-    req.end();
-  });
-}
-
 // ─── Main ──────────────────────────────────────────────────────────────────────
 (async () => {
   console.log(`\n${SEP}`);
-  console.log('NOTIFY EMAIL — INICIO');
+  console.log('NOTIFY EMAIL v2 — INICIO');
   console.log(`${SEP}\n`);
 
-  // 1. Último run válido
-  let run;
-  try {
-    run = await getLatestValidRunId();
-    console.log(`📌 Run: ${run.run_id} (${run.finished_at})`);
-  } catch (err) {
-    console.error(`❌ ${err.message}`);
-    process.exit(1);
-  }
-
-  // 2. Detecciones
+  // 1. Detecciones de hoy
   let detections;
   try {
-    detections = await getDetections(run.run_id);
-    console.log(`📋 ${detections.length} detecciones para este run`);
+    detections = await getTodayDetections();
+    console.log(`📋 ${detections.length} detecciones hoy en total`);
   } catch (err) {
     console.error(`❌ ${err.message}`);
     process.exit(1);
   }
 
-  const desaparecidos = detections.filter(d => d.tipo === 'desaparecido_no_confirmado');
-  const nuevos        = detections.filter(d => d.tipo === 'nuevo');
-  const reaparecidos  = detections.filter(d => d.tipo === 'reaparecido');
+  const bajadas = detections.filter(d => d.tipo === 'desaparecido_no_confirmado');
+  const subidas  = detections.filter(d => d.tipo === 'nuevo');
+  console.log(`  📉 BAJADAS: ${bajadas.length}`);
+  console.log(`  📈 SUBIDAS: ${subidas.length}`);
 
-  console.log(`  📉 Desaparecidos: ${desaparecidos.length}`);
-  console.log(`  🆕 Nuevos:        ${nuevos.length}`);
-  console.log(`  🔄 Reaparecidos:  ${reaparecidos.length}`);
-
-  const total = desaparecidos.length + nuevos.length + reaparecidos.length;
-
-  if (total === 0) {
-    console.log('\nℹ️  Sin cambios detectados — no se manda email.');
+  if (detections.length === 0) {
+    console.log('\nℹ️  Sin cambios hoy — no se manda email.');
     process.exit(0);
   }
 
-  // 3. Nombres de sellers
-  const sellerIds = [...new Set(detections.map(d => String(d.seller_id)))];
+  // 2. Nombres de sellers
+  const sellerIds   = [...new Set(detections.map(d => String(d.seller_id)))];
   const sellerNames = await getSellerNames(sellerIds);
+  console.log(`\n🏪 Sellers con cambios: ${sellerIds.length}`);
+  for (const id of sellerIds) {
+    const n  = sellerNames[id] || id;
+    const b  = detections.filter(d => String(d.seller_id) === id && d.tipo === 'desaparecido_no_confirmado').length;
+    const s  = detections.filter(d => String(d.seller_id) === id && d.tipo === 'nuevo').length;
+    console.log(`  ${n}: 📉${b} 📈${s}`);
+  }
 
-  // 4. Título y precio de cada ítem via MLU API
+  // 3. Detalles de ítems
   const allItemIds = [...new Set(detections.map(d => d.item_id))];
-  console.log(`🔍 Obteniendo detalles de ${allItemIds.length} ítems desde MLU API...`);
+  console.log(`\n🔍 Obteniendo detalles de ${allItemIds.length} ítems...`);
   const itemDetails = await fetchItemDetails(allItemIds);
   console.log(`   ${Object.keys(itemDetails).length}/${allItemIds.length} ítems con título/precio`);
 
-  // 5. Construir email
-  const subject = `MLU Monitor — ${desaparecidos.length} ventas · ${nuevos.length} nuevos · ${reaparecidos.length} reapariciones`;
-  const html = buildEmailHtml(run, desaparecidos, nuevos, reaparecidos, sellerNames, itemDetails);
+  // 4. Construir y enviar email
+  const subject = `📊 MLU Monitor — 📉${bajadas.length} bajadas · 📈${subidas.length} subidas hoy`;
+  const html    = buildEmailHtml(detections, sellerNames, itemDetails);
 
-  // 6. Enviar
   console.log(`\n📧 Enviando email a ${TO}...`);
+  const bodyStr = JSON.stringify({ from: FROM, to: [TO], subject, html });
   let res;
   try {
-    res = await sendEmail(subject, html);
+    res = await httpPost('api.resend.com', '/emails', {
+      'Authorization': `Bearer ${RESEND_KEY}`,
+      'Content-Type':  'application/json',
+    }, bodyStr);
   } catch (err) {
     console.error(`❌ Error enviando email: ${err.message}`);
     process.exit(1);
@@ -334,10 +302,11 @@ function sendEmail(subject, html) {
   if (res.status === 200 || res.status === 201) {
     let id = '';
     try { id = JSON.parse(res.body).id || ''; } catch(_) {}
-    console.log(`✅ Email enviado correctamente${id ? ` (id: ${id})` : ''}`);
+    console.log(`✅ Email enviado${id ? ` (id: ${id})` : ''}`);
+    console.log(`\n${SEP}`);
     process.exit(0);
   } else {
-    console.error(`❌ Resend respondió HTTP ${res.status}: ${res.body}`);
+    console.error(`❌ Resend HTTP ${res.status}: ${res.body}`);
     process.exit(1);
   }
 })();
