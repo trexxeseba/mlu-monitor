@@ -46,7 +46,7 @@ function httpGet(hostname, path) {
 async function scrapeSellerIds(sellerId) {
   const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
   // asp=true + country=uy: proxies residenciales uruguayos con anti-bot activo
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&asp=true&render_js=true&rendering_wait=4000&country=uy`;
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&asp=false&render_js=false&country=uy`;
 
   console.log(`  📡 Scrapfly → seller ${sellerId}...`);
 
