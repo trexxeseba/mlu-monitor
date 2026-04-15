@@ -22,18 +22,18 @@ on:
         default: '0'
 
   schedule:
-    - cron: '0 11 * * *'   # batch 0 — 08:00 UY
-    - cron: '0 13 * * *'   # batch 1 — 10:00 UY
-    - cron: '0 15 * * *'   # batch 2 — 12:00 UY
-    - cron: '0 17 * * *'   # batch 3 — 14:00 UY
-    - cron: '0 19 * * *'   # batch 4 — 16:00 UY
-    - cron: '0 21 * * *'   # email    — 18:00 UY
+    - cron: '0 12 * * *'   # batch 0 — 09:00 UY
+    - cron: '0 14 * * *'   # batch 1 — 11:00 UY
+    - cron: '0 16 * * *'   # batch 2 — 13:00 UY
+    - cron: '0 18 * * *'   # batch 3 — 15:00 UY
+    - cron: '0 20 * * *'   # batch 4 — 17:00 UY
+    - cron: '0 22 * * *'   # email    — 19:00 UY
 
 # ─── Determinar modo (batch vs email) ────────────────────────────────────────
 # Horas UTC que corresponden a scraping: 11,13,15,17,19
 # Hora UTC que corresponde a email: 21
 env:
-  IS_EMAIL_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 21 * * *') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'email') }}
+  IS_EMAIL_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 22 * * *') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'email') }}
 
 jobs:
   # ════════════════════════════════════════════════════════════════════════════
@@ -43,7 +43,7 @@ jobs:
     name: "Scrape batch"
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'schedule' && github.event.schedule != '0 21 * * *') ||
+      (github.event_name == 'schedule' && github.event.schedule != '0 22 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.mode != 'email')
 
     steps:
@@ -144,7 +144,7 @@ jobs:
     name: "Email resumen del día"
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'schedule' && github.event.schedule == '0 21 * * *') ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 22 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.mode == 'email')
 
     steps:
