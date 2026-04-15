@@ -41,33 +41,50 @@ function httpGet(hostname, path) {
 }
 
 // ─── Scrapfly: obtener IDs de items del listado ───────────────────────────────
-async function scrapeSellerIds(sellerId) {
-  const targetUrl = encodeURIComponent(
-    `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`
-  );
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${targetUrl}&asp=true&render_js=true&rendering_wait=5000&country=ar`;
+// Intenta con country=uy (proxy local, menos bot detection).
+// Si falla con 422 (pool agotado), reintenta con país alternativo tras delay.
+const COUNTRY_FALLBACKS = ['uy', 'br', 'us'];
 
-  console.log(`  📡 Scrapfly → seller ${sellerId}...`);
+async function scrapeflyRequest(targetUrl, country) {
+  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&render_js=true&rendering_wait=4000&country=${country}`;
   const res = await httpGet('api.scrapfly.io', path);
+  if (res.status === 422) return { status: 422, html: '' };
   if (res.status !== 200) throw new Error(`Scrapfly HTTP ${res.status}`);
-
   let parsed;
   try { parsed = JSON.parse(res.body); } catch (e) {
     throw new Error(`Scrapfly: JSON inválido — ${e.message}`);
   }
-
   if (!parsed.result?.success) {
-    throw new Error(`Scrapfly: fallo — ${parsed.result?.reason || 'sin razón'} (HTTP ${parsed.result?.status_code})`);
+    throw new Error(`Scrapfly fallo: ${parsed.result?.reason || 'sin razón'} (HTTP ${parsed.result?.status_code})`);
+  }
+  return { status: 200, html: parsed.result.content || '' };
+}
+
+async function scrapeSellerIds(sellerId) {
+  const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
+  console.log(`  📡 Scrapfly → seller ${sellerId}...`);
+
+  let html = '';
+  for (const country of COUNTRY_FALLBACKS) {
+    const { status, html: h } = await scrapeflyRequest(targetUrl, country);
+    if (status === 422) {
+      console.log(`  ⏳ 422 con country=${country}, esperando 8s...`);
+      await new Promise(r => setTimeout(r, 8000));
+      continue;
+    }
+    if (h.includes('account-verification') || h.length < 5000) {
+      console.log(`  🚫 Bloqueado con country=${country}, probando siguiente...`);
+      await new Promise(r => setTimeout(r, 3000));
+      continue;
+    }
+    html = h;
+    console.log(`  ✅ HTML recibido: ${h.length} bytes (country=${country})`);
+    break;
   }
 
-  const html = parsed.result.content || '';
+  if (!html) throw new Error('Scrapfly: bloqueado en todos los países disponibles');
 
-  if (html.includes('account-verification') || html.length < 5000)
-    throw new Error('Scrapfly: página bloqueada o vacía');
-
-  console.log(`  ✅ HTML recibido: ${html.length} bytes`);
-
-  // IDs de ítem MLU: entre 9 y 12 dígitos. Excluye seller IDs (~8 dígitos) y strings más largos.
+  // IDs de ítem MLU: entre 9 y 12 dígitos
   const itemIds = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
   if (!itemIds.length) throw new Error('0 IDs MLU encontrados en el HTML');
 
