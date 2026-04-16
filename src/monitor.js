@@ -117,9 +117,7 @@ async function scrapeSellerIds(sellerId) {
   throw new Error(`Oxylabs falló 2 intentos para seller ${sellerId}`);
 }
 
-// ─── Obtener sellers activos (con soporte de batches) ─────────────────────────
-// SELLER_BATCH = 0..4 → scrape solo 3 sellers del batch
-// Sin SELLER_BATCH (o valor inválido) → scrape todos los sellers
+// ─── Obtener sellers activos ──────────────────────────────────────────────────
 async function getActiveSellers() {
   const { data, error } = await supabase
     .from('sellers')
@@ -128,18 +126,6 @@ async function getActiveSellers() {
     .order('seller_id', { ascending: true });
   if (error) throw new Error(`getSellers: ${error.message}`);
   if (!data?.length) throw new Error('No hay sellers activos en la BD');
-
-  const batchEnv = process.env.SELLER_BATCH;
-  if (batchEnv !== undefined && batchEnv !== '') {
-    const batchNum  = parseInt(batchEnv, 10);
-    const batchSize = 3;
-    const start     = batchNum * batchSize;
-    const slice     = data.slice(start, start + batchSize);
-    console.log(`📦 Batch ${batchNum}: sellers ${start + 1}–${start + slice.length} de ${data.length} total`);
-    if (!slice.length) throw new Error(`Batch ${batchNum} vacío (solo hay ${data.length} sellers)`);
-    return slice;
-  }
-
   return data;
 }
 

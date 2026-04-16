@@ -1,46 +1,28 @@
 name: MLU Monitor Pipeline
 
-# ─── Triggers ─────────────────────────────────────────────────────────────────
 # Uruguay = UTC-3
-# Scraping en 5 batches de 3 sellers c/u durante el día:
-#   08:00 UY (11:00 UTC) → batch 0: sellers 1-3
-#   10:00 UY (13:00 UTC) → batch 1: sellers 4-6
-#   12:00 UY (15:00 UTC) → batch 2: sellers 7-9
-#   14:00 UY (17:00 UTC) → batch 3: sellers 10-12
-#   16:00 UY (19:00 UTC) → batch 4: sellers 13-15
-#   18:00 UY (21:00 UTC) → email con resumen del día
+# 09:00 UY (12:00 UTC) — scraping todos los sellers
+# 14:00 UY (17:00 UTC) — scraping todos los sellers
+# 19:00 UY (22:00 UTC) — email resumen del día
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Modo: scrape (requiere batch 0-4) o email'
+        description: 'scrape o email'
         required: false
         default: 'scrape'
-      batch:
-        description: 'Batch número (0-4) para modo scrape'
-        required: false
-        default: '0'
 
   schedule:
-    - cron: '0 12 * * *'   # batch 0 — 09:00 UY
-    - cron: '0 14 * * *'   # batch 1 — 11:00 UY
-    - cron: '0 16 * * *'   # batch 2 — 13:00 UY
-    - cron: '0 18 * * *'   # batch 3 — 15:00 UY
-    - cron: '0 20 * * *'   # batch 4 — 17:00 UY
-    - cron: '0 22 * * *'   # email    — 19:00 UY
-
-# ─── Determinar modo (batch vs email) ────────────────────────────────────────
-# Horas UTC que corresponden a scraping: 11,13,15,17,19
-# Hora UTC que corresponde a email: 21
-env:
-  IS_EMAIL_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 22 * * *') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'email') }}
+    - cron: '0 12 * * *'   # scrape — 09:00 UY
+    - cron: '0 17 * * *'   # scrape — 14:00 UY
+    - cron: '0 22 * * *'   # email  — 19:00 UY
 
 jobs:
   # ════════════════════════════════════════════════════════════════════════════
-  # JOB A: SCRAPING (batch de 3 sellers)
+  # JOB A: SCRAPING (todos los sellers)
   # ════════════════════════════════════════════════════════════════════════════
   scrape:
-    name: "Scrape batch"
+    name: "Scrape todos los sellers"
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'schedule' && github.event.schedule != '0 22 * * *') ||
@@ -58,39 +40,18 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      # Determinar número de batch según horario
-      - name: Determinar batch
-        id: batch
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "num=${{ inputs.batch }}" >> $GITHUB_OUTPUT
-          else
-            HOUR=$(date -u +%H)
-            case $HOUR in
-              11) echo "num=0" >> $GITHUB_OUTPUT ;;
-              13) echo "num=1" >> $GITHUB_OUTPUT ;;
-              15) echo "num=2" >> $GITHUB_OUTPUT ;;
-              17) echo "num=3" >> $GITHUB_OUTPUT ;;
-              19) echo "num=4" >> $GITHUB_OUTPUT ;;
-              *)  echo "num=0" >> $GITHUB_OUTPUT ;;
-            esac
-          fi
-
-      # ── Step 1: Monitor ────────────────────────────────────────────────────
-      - name: "1/3 — Monitor (scraping batch ${{ steps.batch.outputs.num }})"
+      - name: "1/3 — Monitor (scraping)"
         id: monitor
         env:
-          SUPABASE_URL:   ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:   ${{ secrets.SUPABASE_KEY }}
-          OXYLABS_USER:   ${{ secrets.OXYLABS_USER }}
-          OXYLABS_PASS:   ${{ secrets.OXYLABS_PASS }}
-          SELLER_BATCH:   ${{ steps.batch.outputs.num }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          OXYLABS_USER: ${{ secrets.OXYLABS_USER }}
+          OXYLABS_PASS: ${{ secrets.OXYLABS_PASS }}
         run: |
           set -o pipefail
           mkdir -p output
           node src/monitor.js 2>&1 | tee output/monitor.log
 
-      # ── Step 2: Validate ───────────────────────────────────────────────────
       - name: "2/3 — Validate run"
         id: validate
         continue-on-error: true
@@ -101,7 +62,6 @@ jobs:
           set -o pipefail
           node src/validate_run.js 2>&1 | tee output/validate.log
 
-      # ── Step 3: Detector ───────────────────────────────────────────────────
       - name: "3/3 — Detector de cambios"
         if: steps.validate.outcome == 'success'
         env:
@@ -113,33 +73,18 @@ jobs:
 
       - name: Informar run inválido
         if: steps.validate.outcome == 'failure'
-        run: |
-          echo "⚠️  Run inválido — detector NO corrió."
-          echo "    Ver output/validate.log para el motivo."
+        run: echo "⚠️  Run inválido — detector NO corrió. Ver output/validate.log"
 
-      # ── Step 4: Escribir en Google Sheets ──────────────────────────────────
-      - name: "4/4 — Escribir en Google Sheets"
-        if: steps.validate.outcome == 'success'
-        continue-on-error: true
-        env:
-          GSHEETS_SA_KEY_PATH: /tmp/sa_key.json
-          GSHEETS_SHEET_ID: 1kU7f0vRsNVgcIF1wqyU4v1zopgTkfs8hcMewjT8teTE
-        run: |
-          echo "${{ secrets.GSHEETS_SA_KEY }}" | base64 -d > /tmp/sa_key.json
-          set -o pipefail
-          node src/write_sheets.js 2>&1 | tee output/sheets.log
-
-      # ── Artifacts ──────────────────────────────────────────────────────────
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scrape-batch${{ steps.batch.outputs.num }}-run-${{ github.run_number }}
+          name: scrape-run-${{ github.run_number }}
           path: output/
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # JOB B: EMAIL RESUMEN DEL DÍA (18:00 UY)
+  # JOB B: EMAIL RESUMEN DEL DÍA (19:00 UY)
   # ════════════════════════════════════════════════════════════════════════════
   email:
     name: "Email resumen del día"
@@ -162,11 +107,11 @@ jobs:
 
       - name: "Enviar email con SUBIDAS y BAJADAS del día"
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_URL:   ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:   ${{ secrets.SUPABASE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
-          NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+          NOTIFY_FROM:    ${{ secrets.NOTIFY_FROM }}
+          NOTIFY_TO:      ${{ secrets.NOTIFY_TO }}
         run: |
           set -o pipefail
           mkdir -p output
