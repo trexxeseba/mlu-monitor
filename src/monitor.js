@@ -4,12 +4,13 @@ const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
 // ─── Verificar secrets ────────────────────────────────────────────────────────
-['SUPABASE_URL', 'SUPABASE_KEY', 'SCRAPFLY_KEY'].forEach(k => {
+['SUPABASE_URL', 'SUPABASE_KEY', 'SCRAPERAPI_KEY', 'SPIDER_API_KEY'].forEach(k => {
   if (!process.env[k]) { console.error(`FATAL: falta secret ${k}`); process.exit(1); }
 });
 
-const supabase     = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const SCRAPFLY_KEY = process.env.SCRAPFLY_KEY;
+const supabase        = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const SCRAPERAPI_KEY  = process.env.SCRAPERAPI_KEY;
+const SPIDER_API_KEY  = process.env.SPIDER_API_KEY;
 
 const RUN_ID     = `run_${Date.now()}`;
 const STARTED_AT = new Date().toISOString();
@@ -26,8 +27,8 @@ console.log(`RUN_ID:     ${RUN_ID}`);
 console.log(`STARTED_AT: ${STARTED_AT}`);
 console.log(`${SEP}\n`);
 
-// ─── HTTP helper ──────────────────────────────────────────────────────────────
-function httpGet(hostname, path) {
+// ─── HTTP helpers ─────────────────────────────────────────────────────────────
+function httpGet(hostname, path, timeoutMs = 30000) {
   return new Promise((resolve, reject) => {
     const req = https.request({ hostname, path, method: 'GET' }, res => {
       let data = '';
@@ -35,53 +36,115 @@ function httpGet(hostname, path) {
       res.on('end', () => resolve({ status: res.statusCode, body: data }));
     });
     req.on('error', reject);
-    req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout 30s')); });
+    req.setTimeout(timeoutMs, () => { req.destroy(); reject(new Error(`timeout ${timeoutMs}ms`)); });
     req.end();
   });
 }
 
-// ─── Scrapfly: obtener IDs de items del listado ───────────────────────────────
-// Intenta con country=uy (proxy local, menos bot detection).
-// Si falla con 422 (pool agotado), reintenta con país alternativo tras delay.
+function httpPost(hostname, path, body, headers = {}, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    const bodyBuf = Buffer.from(body, 'utf8');
+    const opts = {
+      hostname, path, method: 'POST',
+      headers: { 'Content-Length': bodyBuf.length, ...headers },
+    };
+    const req = https.request(opts, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(timeoutMs, () => { req.destroy(); reject(new Error(`timeout ${timeoutMs}ms`)); });
+    req.write(bodyBuf);
+    req.end();
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── Validar HTML y extraer IDs ───────────────────────────────────────────────
+function validateAndExtract(html, providerName) {
+  if (!html || html.length < 5000)
+    throw new Error(`${providerName}: HTML demasiado corto (${html?.length ?? 0} bytes)`);
+  if (html.includes('account-verification'))
+    throw new Error(`${providerName}: página bloqueada (account-verification)`);
+  if (html.includes('suspicious_traffic'))
+    throw new Error(`${providerName}: página bloqueada (suspicious_traffic)`);
+
+  const ids = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
+  if (!ids.length)
+    throw new Error(`${providerName}: 0 IDs MLU encontrados en el HTML`);
+  return ids;
+}
+
+// ─── ScraperAPI (primario) ────────────────────────────────────────────────────
+async function scrapeWithScraperAPI(targetUrl) {
+  const path = `/scrape?api_key=${SCRAPERAPI_KEY}&url=${encodeURIComponent(targetUrl)}&country_code=uy&render=true`;
+  const res = await httpGet('api.scraperapi.com', path, 25000);
+  console.log(`    provider=scraperapi status=${res.status} bytes=${res.body.length}`);
+  if (res.status !== 200)
+    throw new Error(`scraperapi HTTP ${res.status}`);
+  return validateAndExtract(res.body, 'scraperapi');
+}
+
+// ─── Spider.cloud (fallback) ──────────────────────────────────────────────────
+async function scrapeWithSpider(targetUrl) {
+  const bodyJson = JSON.stringify({
+    url:           targetUrl,
+    request:       'chrome',
+    country_code:  'UY',
+    proxy:         'residential',
+    return_format: 'raw',
+  });
+  const res = await httpPost('api.spider.cloud', '/v1/scrape', bodyJson, {
+    'Content-Type':  'application/json',
+    'Authorization': `Bearer ${SPIDER_API_KEY}`,
+    'Accept':        'application/json',
+  }, 25000);
+  console.log(`    provider=spider status=${res.status} bytes=${res.body.length}`);
+  if (res.status !== 200)
+    throw new Error(`spider HTTP ${res.status}`);
+
+  let html;
+  try {
+    const parsed = JSON.parse(res.body);
+    // Spider devuelve array de resultados; content está en parsed[0]?.content
+    html = parsed?.[0]?.content ?? parsed?.content ?? res.body;
+  } catch {
+    html = res.body;
+  }
+  return validateAndExtract(html, 'spider');
+}
+
+// ─── scrapeSellerIds: dual-provider con retry ─────────────────────────────────
 async function scrapeSellerIds(sellerId) {
   const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
-  // Sin country= : Scrapfly elige cualquier proxy disponible del pool global.
-  // country=uy fue removido porque el pool residencial UY del plan DISCOVERY
-  // se agota con 3 requests simultáneos (HTTP 422).
-  const path = `/scrape?key=${SCRAPFLY_KEY}&url=${encodeURIComponent(targetUrl)}&asp=false&render_js=false`;
+  console.log(`  📡 scraping seller ${sellerId}...`);
 
-  console.log(`  📡 Scrapfly → seller ${sellerId}...`);
+  const providers = [
+    { name: 'scraperapi', fn: () => scrapeWithScraperAPI(targetUrl) },
+    { name: 'spider',     fn: () => scrapeWithSpider(targetUrl) },
+  ];
 
-  const res = await httpGet('api.scrapfly.io', path);
-  if (res.status !== 200) throw new Error(`Scrapfly HTTP ${res.status}`);
+  const errors = [];
 
-  let parsed;
-  try { parsed = JSON.parse(res.body); } catch (e) {
-    throw new Error(`Scrapfly: JSON inválido — ${e.message}`);
+  for (const { name, fn } of providers) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`    provider=${name} attempt=${attempt}`);
+        const ids = await fn();
+        console.log(`  ✅ winner=${name} attempt=${attempt} ids=${ids.length}`);
+        return ids;
+      } catch (err) {
+        console.log(`    provider=${name} attempt=${attempt} error=${err.message}`);
+        errors.push(`${name}#${attempt}: ${err.message}`);
+        if (attempt === 1) await sleep(2000);
+      }
+    }
   }
 
-  if (!parsed.result?.success) {
-    throw new Error(`Scrapfly fallo: ${parsed.result?.reason || 'sin razón'} (HTTP ${parsed.result?.status_code})`);
-  }
-
-  // Loggear país del proxy efectivamente usado
-  const proxyCountry = parsed.result?.context?.proxy?.country
-    || parsed.context?.proxy?.country
-    || 'desconocido';
-  console.log(`  🌐 proxy country=${proxyCountry}`);
-
-  const html = parsed.result.content || '';
-
-  if (html.includes('account-verification') || html.length < 5000)
-    throw new Error('Scrapfly: página bloqueada o vacía');
-
-  console.log(`  ✅ HTML recibido: ${html.length} bytes`);
-
-  const itemIds = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
-  if (!itemIds.length) throw new Error('0 IDs MLU encontrados en el HTML');
-
-  console.log(`  📋 IDs únicos extraídos: ${itemIds.length}`);
-  return itemIds;
+  console.log(`  ❌ failed_all=true`);
+  throw new Error(`All providers failed — ${errors.join(' | ')}`);
 }
 
 // ─── Obtener sellers activos (con soporte de batches) ─────────────────────────
