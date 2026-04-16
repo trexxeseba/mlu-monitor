@@ -62,59 +62,81 @@ function httpPost(hostname, path, body, headers = {}, timeoutMs = 30000) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ─── Oxylabs: scrape via Web Scraper API ─────────────────────────────────────
-async function scrapeWithOxylabs(targetUrl) {
-  const payload = JSON.stringify({ source: 'universal', url: targetUrl });
+// ─── Oxylabs: scrape una URL y devolver HTML + IDs ───────────────────────────
+async function fetchPage(url) {
+  const payload = JSON.stringify({ source: 'universal', url });
   const auth    = Buffer.from(`${OXYLABS_USER}:${OXYLABS_PASS}`).toString('base64');
   const res = await httpPost('realtime.oxylabs.io', '/v1/queries', payload, {
     'Content-Type':  'application/json',
     'Authorization': `Basic ${auth}`,
   }, 60000);
 
-  console.log(`    provider=oxylabs status=${res.status} bytes=${res.body.length}`);
   if (res.status !== 200)
     throw new Error(`oxylabs HTTP ${res.status}: ${res.body.slice(0, 200)}`);
 
   let html;
-  try {
-    const parsed = JSON.parse(res.body);
-    html = parsed.results?.[0]?.content ?? '';
-  } catch (e) {
-    throw new Error(`oxylabs JSON inválido: ${e.message}`);
-  }
+  try { html = JSON.parse(res.body).results?.[0]?.content ?? ''; }
+  catch (e) { throw new Error(`oxylabs JSON inválido: ${e.message}`); }
 
   if (!html || html.length < 5000)
-    throw new Error(`oxylabs: HTML demasiado corto (${html?.length ?? 0} bytes)`);
+    throw new Error(`HTML corto (${html?.length ?? 0} bytes)`);
   if (html.includes('account-verification'))
-    throw new Error('oxylabs: bloqueado (account-verification)');
+    throw new Error('bloqueado (account-verification)');
   if (html.includes('suspicious_traffic'))
-    throw new Error('oxylabs: bloqueado (suspicious_traffic)');
+    throw new Error('bloqueado (suspicious_traffic)');
 
   const ids = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
-  if (!ids.length)
-    throw new Error('oxylabs: 0 IDs MLU en el HTML');
-  return ids;
+  return { html, ids };
 }
 
-// ─── scrapeSellerIds con retry ────────────────────────────────────────────────
+// ─── scrapeSellerIds: paginación automática ───────────────────────────────────
+// ML pagina en grupos de 48. URL: /_CustId_ID_Desde_49_NoIndex_True, _Desde_97, ...
 async function scrapeSellerIds(sellerId) {
-  const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
+  const base = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
   console.log(`  📡 scraping seller ${sellerId}...`);
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      console.log(`    provider=oxylabs attempt=${attempt}`);
-      const ids = await scrapeWithOxylabs(targetUrl);
-      console.log(`  ✅ provider=oxylabs attempt=${attempt} ids=${ids.length}`);
-      return ids;
-    } catch (err) {
-      console.log(`    provider=oxylabs attempt=${attempt} error=${err.message}`);
-      if (attempt === 1) await sleep(3000);
+  const allIds = new Set();
+  let   page   = 1;
+  const PAGE_SIZE = 48;
+  const MAX_PAGES = 25; // tope de seguridad (1200 items max)
+
+  while (page <= MAX_PAGES) {
+    const url = page === 1
+      ? base
+      : `${base}_Desde_${1 + PAGE_SIZE * (page - 1)}_NoIndex_True`;
+
+    let result;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        console.log(`    página=${page} attempt=${attempt} url=...Desde_${page === 1 ? 1 : 1 + PAGE_SIZE * (page - 1)}`);
+        result = await fetchPage(url);
+        break;
+      } catch (err) {
+        console.log(`    página=${page} attempt=${attempt} error=${err.message}`);
+        if (attempt === 1) await sleep(3000);
+        else if (page === 1) throw new Error(`Oxylabs falló en página 1: ${err.message}`);
+        else { console.log(`    página=${page} — skip (no es crítico)`); result = null; break; }
+      }
     }
+
+    if (!result) break;
+
+    const antes = allIds.size;
+    result.ids.forEach(id => allIds.add(id));
+    const nuevos = allIds.size - antes;
+    console.log(`    página=${page} ids_nuevos=${nuevos} total_acum=${allIds.size} bytes=${result.html.length}`);
+
+    // Si no hay más páginas de paginación o no llegaron IDs nuevos → fin
+    const hasNextPage = result.html.includes(`_Desde_${1 + PAGE_SIZE * page}`);
+    if (!hasNextPage || nuevos === 0) break;
+
+    page++;
+    await sleep(1000); // pausa cortés entre páginas
   }
 
-  console.log(`  ❌ failed_all=true`);
-  throw new Error(`Oxylabs falló 2 intentos para seller ${sellerId}`);
+  if (!allIds.size) throw new Error('0 IDs MLU encontrados en todas las páginas');
+  console.log(`  ✅ seller=${sellerId} total_ids=${allIds.size} páginas=${page}`);
+  return [...allIds];
 }
 
 // ─── Obtener sellers activos ──────────────────────────────────────────────────
