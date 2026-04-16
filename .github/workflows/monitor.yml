@@ -112,6 +112,8 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_FROM:    ${{ secrets.NOTIFY_FROM }}
           NOTIFY_TO:      ${{ secrets.NOTIFY_TO }}
+          OXYLABS_USER:   ${{ secrets.OXYLABS_USER }}
+          OXYLABS_PASS:   ${{ secrets.OXYLABS_PASS }}
         run: |
           set -o pipefail
           mkdir -p output
