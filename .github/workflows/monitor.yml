@@ -80,11 +80,11 @@ jobs:
       - name: "1/3 — Monitor (scraping batch ${{ steps.batch.outputs.num }})"
         id: monitor
         env:
-          SUPABASE_URL:    ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:    ${{ secrets.SUPABASE_KEY }}
-          SCRAPERAPI_KEY:  ${{ secrets.SCRAPERAPI_KEY }}
-          SPIDER_API_KEY:  ${{ secrets.SPIDER_API_KEY }}
-          SELLER_BATCH:    ${{ steps.batch.outputs.num }}
+          SUPABASE_URL:   ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:   ${{ secrets.SUPABASE_KEY }}
+          OXYLABS_USER:   ${{ secrets.OXYLABS_USER }}
+          OXYLABS_PASS:   ${{ secrets.OXYLABS_PASS }}
+          SELLER_BATCH:   ${{ steps.batch.outputs.num }}
         run: |
           set -o pipefail
           mkdir -p output

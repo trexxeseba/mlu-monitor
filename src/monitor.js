@@ -4,13 +4,13 @@ const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 
 // ─── Verificar secrets ────────────────────────────────────────────────────────
-['SUPABASE_URL', 'SUPABASE_KEY', 'SCRAPERAPI_KEY', 'SPIDER_API_KEY'].forEach(k => {
+['SUPABASE_URL', 'SUPABASE_KEY', 'OXYLABS_USER', 'OXYLABS_PASS'].forEach(k => {
   if (!process.env[k]) { console.error(`FATAL: falta secret ${k}`); process.exit(1); }
 });
 
-const supabase        = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const SCRAPERAPI_KEY  = process.env.SCRAPERAPI_KEY;
-const SPIDER_API_KEY  = process.env.SPIDER_API_KEY;
+const supabase      = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const OXYLABS_USER  = process.env.OXYLABS_USER;
+const OXYLABS_PASS  = process.env.OXYLABS_PASS;
 
 const RUN_ID     = `run_${Date.now()}`;
 const STARTED_AT = new Date().toISOString();
@@ -62,89 +62,59 @@ function httpPost(hostname, path, body, headers = {}, timeoutMs = 30000) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ─── Validar HTML y extraer IDs ───────────────────────────────────────────────
-function validateAndExtract(html, providerName) {
-  if (!html || html.length < 5000)
-    throw new Error(`${providerName}: HTML demasiado corto (${html?.length ?? 0} bytes)`);
-  if (html.includes('account-verification'))
-    throw new Error(`${providerName}: página bloqueada (account-verification)`);
-  if (html.includes('suspicious_traffic'))
-    throw new Error(`${providerName}: página bloqueada (suspicious_traffic)`);
-
-  const ids = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
-  if (!ids.length)
-    throw new Error(`${providerName}: 0 IDs MLU encontrados en el HTML`);
-  return ids;
-}
-
-// ─── ScraperAPI (primario) ────────────────────────────────────────────────────
-async function scrapeWithScraperAPI(targetUrl) {
-  const path = `/scrape?api_key=${SCRAPERAPI_KEY}&url=${encodeURIComponent(targetUrl)}&country_code=uy&render=true`;
-  const res = await httpGet('api.scraperapi.com', path, 25000);
-  console.log(`    provider=scraperapi status=${res.status} bytes=${res.body.length}`);
-  if (res.status !== 200)
-    throw new Error(`scraperapi HTTP ${res.status}`);
-  return validateAndExtract(res.body, 'scraperapi');
-}
-
-// ─── Spider.cloud (fallback) ──────────────────────────────────────────────────
-async function scrapeWithSpider(targetUrl) {
-  const bodyJson = JSON.stringify({
-    url:           targetUrl,
-    request:       'chrome',
-    country_code:  'UY',
-    proxy:         'residential',
-    return_format: 'raw',
-  });
-  const res = await httpPost('api.spider.cloud', '/v1/scrape', bodyJson, {
+// ─── Oxylabs: scrape via Web Scraper API ─────────────────────────────────────
+async function scrapeWithOxylabs(targetUrl) {
+  const payload = JSON.stringify({ source: 'universal', url: targetUrl });
+  const auth    = Buffer.from(`${OXYLABS_USER}:${OXYLABS_PASS}`).toString('base64');
+  const res = await httpPost('realtime.oxylabs.io', '/v1/queries', payload, {
     'Content-Type':  'application/json',
-    'Authorization': `Bearer ${SPIDER_API_KEY}`,
-    'Accept':        'application/json',
-  }, 25000);
-  console.log(`    provider=spider status=${res.status} bytes=${res.body.length}`);
+    'Authorization': `Basic ${auth}`,
+  }, 60000);
+
+  console.log(`    provider=oxylabs status=${res.status} bytes=${res.body.length}`);
   if (res.status !== 200)
-    throw new Error(`spider HTTP ${res.status}`);
+    throw new Error(`oxylabs HTTP ${res.status}: ${res.body.slice(0, 200)}`);
 
   let html;
   try {
     const parsed = JSON.parse(res.body);
-    // Spider devuelve array de resultados; content está en parsed[0]?.content
-    html = parsed?.[0]?.content ?? parsed?.content ?? res.body;
-  } catch {
-    html = res.body;
+    html = parsed.results?.[0]?.content ?? '';
+  } catch (e) {
+    throw new Error(`oxylabs JSON inválido: ${e.message}`);
   }
-  return validateAndExtract(html, 'spider');
+
+  if (!html || html.length < 5000)
+    throw new Error(`oxylabs: HTML demasiado corto (${html?.length ?? 0} bytes)`);
+  if (html.includes('account-verification'))
+    throw new Error('oxylabs: bloqueado (account-verification)');
+  if (html.includes('suspicious_traffic'))
+    throw new Error('oxylabs: bloqueado (suspicious_traffic)');
+
+  const ids = [...new Set((html.match(/MLU\d{9,12}/g) || []))];
+  if (!ids.length)
+    throw new Error('oxylabs: 0 IDs MLU en el HTML');
+  return ids;
 }
 
-// ─── scrapeSellerIds: dual-provider con retry ─────────────────────────────────
+// ─── scrapeSellerIds con retry ────────────────────────────────────────────────
 async function scrapeSellerIds(sellerId) {
   const targetUrl = `https://listado.mercadolibre.com.uy/_CustId_${sellerId}`;
   console.log(`  📡 scraping seller ${sellerId}...`);
 
-  const providers = [
-    { name: 'scraperapi', fn: () => scrapeWithScraperAPI(targetUrl) },
-    { name: 'spider',     fn: () => scrapeWithSpider(targetUrl) },
-  ];
-
-  const errors = [];
-
-  for (const { name, fn } of providers) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        console.log(`    provider=${name} attempt=${attempt}`);
-        const ids = await fn();
-        console.log(`  ✅ winner=${name} attempt=${attempt} ids=${ids.length}`);
-        return ids;
-      } catch (err) {
-        console.log(`    provider=${name} attempt=${attempt} error=${err.message}`);
-        errors.push(`${name}#${attempt}: ${err.message}`);
-        if (attempt === 1) await sleep(2000);
-      }
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      console.log(`    provider=oxylabs attempt=${attempt}`);
+      const ids = await scrapeWithOxylabs(targetUrl);
+      console.log(`  ✅ provider=oxylabs attempt=${attempt} ids=${ids.length}`);
+      return ids;
+    } catch (err) {
+      console.log(`    provider=oxylabs attempt=${attempt} error=${err.message}`);
+      if (attempt === 1) await sleep(3000);
     }
   }
 
   console.log(`  ❌ failed_all=true`);
-  throw new Error(`All providers failed — ${errors.join(' | ')}`);
+  throw new Error(`Oxylabs falló 2 intentos para seller ${sellerId}`);
 }
 
 // ─── Obtener sellers activos (con soporte de batches) ─────────────────────────
