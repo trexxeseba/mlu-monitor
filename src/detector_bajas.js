@@ -30,8 +30,59 @@ const fs = require('fs');
   if (!process.env[k]) { console.error(`FATAL: falta variable ${k}`); process.exit(1); }
 });
 
+const https    = require('https');
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+const OXYLABS_USER = process.env.OXYLABS_USER || '';
+const OXYLABS_PASS = process.env.OXYLABS_PASS || '';
+
+// ─── Enriquecer items: título + precio via Oxylabs → ML API ──────────────────
+async function enrichItems(itemIds) {
+  const details = {};
+  if (!itemIds.length || !OXYLABS_USER) return details;
+
+  const CHUNK = 20;
+  for (let i = 0; i < itemIds.length; i += CHUNK) {
+    const chunk   = itemIds.slice(i, i + CHUNK);
+    const mlUrl   = `https://api.mercadolibre.com/items?ids=${chunk.join(',')}`;
+    const payload = JSON.stringify({ source: 'universal', url: mlUrl });
+    const auth    = Buffer.from(`${OXYLABS_USER}:${OXYLABS_PASS}`).toString('base64');
+
+    try {
+      const raw = await new Promise((resolve, reject) => {
+        const req = https.request({
+          hostname: 'realtime.oxylabs.io', path: '/v1/queries', method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload), 'Authorization': 'Basic ' + auth },
+        }, res => { const c = []; res.on('data', x => c.push(x)); res.on('end', () => resolve(Buffer.concat(c).toString())); });
+        req.on('error', reject);
+        req.setTimeout(30000, () => { req.destroy(); reject(new Error('timeout')); });
+        req.write(payload); req.end();
+      });
+
+      const oxy  = JSON.parse(raw);
+      let content = oxy.results?.[0]?.content;
+      if (typeof content === 'string') content = JSON.parse(content);
+      if (!Array.isArray(content)) continue;
+
+      for (const row of content) {
+        const b = row.body || row;
+        if (b?.id) {
+          details[b.id] = {
+            title:     b.title     || null,
+            price:     b.price     ?? null,
+            currency:  b.currency_id || 'UYU',
+            thumbnail: b.thumbnail || b.pictures?.[0]?.url || null,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn(`  ⚠️  enrichItems chunk error: ${e.message}`);
+    }
+  }
+  console.log(`  🔍 enriquecidos: ${Object.keys(details).length}/${itemIds.length}`);
+  return details;
+}
 
 const SEP  = '═'.repeat(70);
 const SEP2 = '─'.repeat(70);
@@ -251,9 +302,18 @@ async function saveChanges(rows) {
       continue;
     }
 
+    // Enriquecer con título y precio antes de guardar
+    const enriched = await enrichItems(r.desaparecidos);
+
     const rows = r.desaparecidos.map(id => ({
-      seller_id: r.sellerId, item_id: id, meli_item_id: id,
-      tipo: 'desaparecido_no_confirmado', run_id: DET_RUN_ID, fecha_deteccion: NOW,
+      seller_id:     r.sellerId,
+      item_id:       id,
+      meli_item_id:  id,
+      tipo:          'desaparecido_no_confirmado',
+      run_id:        DET_RUN_ID,
+      fecha_deteccion: NOW,
+      title:         enriched[id]?.title     ?? null,
+      price_anterior: enriched[id]?.price    ?? null,
     }));
 
     console.log(`\nGuardando ${r.desaparecidos.length} bajas para ${r.name}...`);

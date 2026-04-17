@@ -65,8 +65,10 @@ jobs:
       - name: "3/3 — Detector de cambios"
         if: steps.validate.outcome == 'success'
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_URL:  ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:  ${{ secrets.SUPABASE_KEY }}
+          OXYLABS_USER:  ${{ secrets.OXYLABS_USER }}
+          OXYLABS_PASS:  ${{ secrets.OXYLABS_PASS }}
         run: |
           set -o pipefail
           node src/detector_bajas.js 2>&1 | tee output/detector.log
