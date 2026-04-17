@@ -111,7 +111,7 @@ async function getTodayDetections() {
 
   const { data, error } = await supabase
     .from('bajas_detectadas')
-    .select('tipo, item_id, seller_id, fecha_deteccion, run_id')
+    .select('tipo, item_id, seller_id, fecha_deteccion, run_id, title, price_anterior')
     .gte('fecha_deteccion', startUTC)
     .lt('fecha_deteccion', endUTC)
     .order('seller_id')
@@ -278,9 +278,26 @@ function buildEmailHtml(detections, sellerNames, itemDetails) {
   const sellerIds   = [...new Set(detections.map(d => String(d.seller_id)))];
   const sellerNames = await getSellerNames(sellerIds);
 
-  const allItemIds  = [...new Set(detections.map(d => d.item_id))];
-  console.log(`\n🔍 Obteniendo detalles de ${allItemIds.length} ítems via ${OXYLABS_USER ? 'Oxylabs' : 'ML directo'}...`);
-  const itemDetails = await fetchItemDetails(allItemIds);
+  // Detalles de ítems: primero usamos title/price ya guardados en bajas_detectadas
+  // El fetch externo solo se usa para ítems sin título (legado o fallo de enriquecimiento)
+  const itemDetails = {};
+  for (const d of detections) {
+    if (d.title || d.price_anterior) {
+      itemDetails[d.item_id] = {
+        title:    d.title     || null,
+        price:    d.price_anterior ?? null,
+        currency: 'UYU',
+        thumbnail: null,
+        url: `https://articulo.mercadolibre.com.uy/-_${d.item_id}`,
+      };
+    }
+  }
+  const sinDetalle = [...new Set(detections.map(d => d.item_id))].filter(id => !itemDetails[id]);
+  if (sinDetalle.length && OXYLABS_USER) {
+    console.log(`\n🔍 Fetching detalles faltantes para ${sinDetalle.length} ítems...`);
+    const extra = await fetchItemDetails(sinDetalle);
+    Object.assign(itemDetails, extra);
+  }
 
   const subject = `📊 MLU Monitor — 📉${bajadas.length} bajadas · 📈${subidas.length} subidas`;
   const html    = buildEmailHtml(detections, sellerNames, itemDetails);
