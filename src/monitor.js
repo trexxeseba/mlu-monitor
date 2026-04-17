@@ -178,13 +178,14 @@ async function getSellerBaseline(sellerId, validRunId) {
   return data?.length ?? null;
 }
 
-// ─── Guardar snapshots de un seller (solo IDs del listado) ───────────────────
-// Usa UPSERT por (seller_id, meli_item_id) — clave compuesta correcta.
-// Requiere el constraint único: snapshots_seller_item_unique (migración 003).
-// Items no vistos en este run conservan el run_id anterior (así funciona la
-// detección de bajas: setAnterior = WHERE run_id=run_anterior).
-// Insertamos en chunks de 500 para evitar límites de payload de Supabase.
-const UPSERT_CHUNK = 500;
+// ─── Guardar snapshots de un seller ──────────────────────────────────────────
+// INSERT puro (no UPSERT) — no requiere ningún constraint de DB.
+// El detector compara run_id=runActual vs run_id=runAnterior, así que tener
+// múltiples filas por item (una por run) es correcto y suficiente.
+// Cada run genera N filas nuevas por seller. Se limpian runs viejos al final.
+// Insertamos en chunks de 500 para no superar límites de payload de Supabase.
+const INSERT_CHUNK = 500;
+const KEEP_RUNS    = 6; // cuántos runs retener por seller (3 días x 2 scrapes/día)
 
 async function saveSnapshots(sellerId, itemIds) {
   const checkedAt = new Date().toISOString();
@@ -198,14 +199,38 @@ async function saveSnapshots(sellerId, itemIds) {
   }));
 
   let saved = 0;
-  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
-    const chunk = rows.slice(i, i + UPSERT_CHUNK);
-    const { error } = await supabase
-      .from('snapshots')
-      .upsert(chunk, { onConflict: 'seller_id,meli_item_id' });
+  for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
+    const chunk = rows.slice(i, i + INSERT_CHUNK);
+    const { error } = await supabase.from('snapshots').insert(chunk);
     if (error) throw new Error(`saveSnapshots chunk ${i}-${i + chunk.length}: ${error.message}`);
     saved += chunk.length;
   }
+
+  // Limpiar runs viejos: conservar solo los últimos KEEP_RUNS run_ids por seller
+  try {
+    const { data: runRows } = await supabase
+      .from('snapshots')
+      .select('run_id')
+      .eq('seller_id', String(sellerId))
+      .order('checked_at', { ascending: false })
+      .limit(5000);
+
+    const seen = [];
+    for (const r of (runRows || [])) {
+      if (r.run_id && !seen.includes(r.run_id)) seen.push(r.run_id);
+    }
+    const toDelete = seen.slice(KEEP_RUNS); // runs más viejos que KEEP_RUNS
+    for (const oldRun of toDelete) {
+      await supabase.from('snapshots').delete()
+        .eq('seller_id', String(sellerId)).eq('run_id', oldRun);
+    }
+    if (toDelete.length > 0) {
+      console.log(`  🧹 Limpiados ${toDelete.length} runs viejos de seller ${sellerId}`);
+    }
+  } catch (e) {
+    console.warn(`  ⚠️  Limpieza de runs viejos falló (no crítico): ${e.message}`);
+  }
+
   return saved;
 }
 
@@ -249,7 +274,7 @@ async function processSeller(seller, lastValidRunId) {
   let status = 'failed', errorMessage = '', itemsFound = 0;
 
   try {
-    // 1. Obtener IDs desde el listado via Scrapfly
+    // 1. Obtener IDs desde el listado via Oxylabs
     const itemIds = await scrapeSellerIds(sellerId);
 
     // 2. Validar contra baseline del último run válido
