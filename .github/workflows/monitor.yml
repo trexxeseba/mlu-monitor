@@ -24,6 +24,7 @@ jobs:
   scrape:
     name: "Scrape todos los sellers"
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     if: |
       (github.event_name == 'schedule' && github.event.schedule != '0 22 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.mode != 'email')
@@ -73,9 +74,29 @@ jobs:
           set -o pipefail
           node src/detector_bajas.js 2>&1 | tee output/detector.log
 
-      - name: Informar run inválido
+      - name: Alerta run inválido — email
         if: steps.validate.outcome == 'failure'
-        run: echo "⚠️  Run inválido — detector NO corrió. Ver output/validate.log"
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_FROM:    ${{ secrets.NOTIFY_FROM }}
+          NOTIFY_TO:      ${{ secrets.NOTIFY_TO }}
+        run: |
+          echo "⚠️  Run inválido — detector NO corrió. Enviando alerta..."
+          node -e "
+          const https = require('https');
+          const body = JSON.stringify({
+            from: process.env.NOTIFY_FROM || 'MLU Monitor <onboarding@resend.dev>',
+            to:   [process.env.NOTIFY_TO  || 'undiaes@gmail.com'],
+            subject: '⚠️ MLU Monitor — run inválido detectado',
+            html: '<h2>Run inválido</h2><p>El scraping del run <code>${{ github.run_number }}</code> fue marcado inválido.</p><p>El detector de bajas NO corrió. Revisar los logs del workflow.</p><p><a href=\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\">Ver run en GitHub Actions</a></p>'
+          });
+          const req = https.request({
+            hostname: 'api.resend.com', path: '/emails', method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+          }, res => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>console.log('Alerta enviada HTTP', res.statusCode, d.slice(0,100))); });
+          req.on('error', e => console.error('Error alerta:', e.message));
+          req.write(body); req.end();
+          " || echo "⚠️  Falló el envío de alerta (no crítico)"
 
       - name: Upload artifacts
         if: always()
@@ -83,7 +104,7 @@ jobs:
         with:
           name: scrape-run-${{ github.run_number }}
           path: output/
-          retention-days: 7
+          retention-days: 30
 
   # ════════════════════════════════════════════════════════════════════════════
   # JOB B: EMAIL RESUMEN DEL DÍA (19:00 UY)
@@ -91,6 +112,7 @@ jobs:
   email:
     name: "Email resumen del día"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: |
       (github.event_name == 'schedule' && github.event.schedule == '0 22 * * *') ||
       (github.event_name == 'workflow_dispatch' && inputs.mode == 'email')
@@ -127,4 +149,4 @@ jobs:
         with:
           name: email-run-${{ github.run_number }}
           path: output/
-          retention-days: 7
+          retention-days: 30

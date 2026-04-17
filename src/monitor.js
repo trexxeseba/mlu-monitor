@@ -179,8 +179,13 @@ async function getSellerBaseline(sellerId, validRunId) {
 }
 
 // ─── Guardar snapshots de un seller (solo IDs del listado) ───────────────────
-// Usa UPSERT por meli_item_id para que cada item muestre el run_id del último
-// run en que fue visto. Items no vistos en este run conservan el run_id anterior.
+// Usa UPSERT por (seller_id, meli_item_id) — clave compuesta correcta.
+// Requiere el constraint único: snapshots_seller_item_unique (migración 003).
+// Items no vistos en este run conservan el run_id anterior (así funciona la
+// detección de bajas: setAnterior = WHERE run_id=run_anterior).
+// Insertamos en chunks de 500 para evitar límites de payload de Supabase.
+const UPSERT_CHUNK = 500;
+
 async function saveSnapshots(sellerId, itemIds) {
   const checkedAt = new Date().toISOString();
   const rows = itemIds.map(itemId => ({
@@ -192,9 +197,16 @@ async function saveSnapshots(sellerId, itemIds) {
     timestamp:    checkedAt,
   }));
 
-  const { error } = await supabase.from('snapshots').upsert(rows, { onConflict: 'meli_item_id' });
-  if (error) throw new Error(`saveSnapshots: ${error.message}`);
-  return rows.length;
+  let saved = 0;
+  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+    const chunk = rows.slice(i, i + UPSERT_CHUNK);
+    const { error } = await supabase
+      .from('snapshots')
+      .upsert(chunk, { onConflict: 'seller_id,meli_item_id' });
+    if (error) throw new Error(`saveSnapshots chunk ${i}-${i + chunk.length}: ${error.message}`);
+    saved += chunk.length;
+  }
+  return saved;
 }
 
 // ─── Registrar estado del run ─────────────────────────────────────────────────
