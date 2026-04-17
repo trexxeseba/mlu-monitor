@@ -64,8 +64,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ─── Oxylabs: scrape una URL y devolver HTML + IDs ───────────────────────────
 async function fetchPage(url) {
-  // geo_location Uruguay → exit node en UY/AR → menos bloqueos de ML
-  const payload = JSON.stringify({ source: 'universal', url, geo_location: 'Uruguay' });
+  const payload = JSON.stringify({ source: 'universal', url });
   const auth    = Buffer.from(`${OXYLABS_USER}:${OXYLABS_PASS}`).toString('base64');
   const res = await httpPost('realtime.oxylabs.io', '/v1/queries', payload, {
     'Content-Type':  'application/json',
