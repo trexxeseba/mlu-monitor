@@ -111,7 +111,7 @@ async function getTodayDetections() {
 
   const { data, error } = await supabase
     .from('bajas_detectadas')
-    .select('tipo, item_id, seller_id, fecha_deteccion, run_id, title, price_anterior')
+    .select('tipo, item_id, seller_id, fecha_deteccion, run_id, title, price_anterior, thumbnail')
     .gte('fecha_deteccion', startUTC)
     .lt('fecha_deteccion', endUTC)
     .order('seller_id')
@@ -284,10 +284,10 @@ function buildEmailHtml(detections, sellerNames, itemDetails) {
   for (const d of detections) {
     if (d.title || d.price_anterior) {
       itemDetails[d.item_id] = {
-        title:    d.title     || null,
-        price:    d.price_anterior ?? null,
-        currency: 'UYU',
-        thumbnail: null,
+        title:     d.title          || null,
+        price:     d.price_anterior ?? null,
+        currency:  'UYU',
+        thumbnail: d.thumbnail      || null,
         url: `https://articulo.mercadolibre.com.uy/-_${d.item_id}`,
       };
     }

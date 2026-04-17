@@ -276,6 +276,21 @@ async function saveChanges(rows) {
   const { error } = await supabase.from('bajas_detectadas').insert(rows);
   if (!error) return rows.length;
 
+  // Si falla por columna inexistente (thumbnail no existe aún), reintentar sin ella
+  if (error.message?.includes('thumbnail')) {
+    console.warn('  ⚠️  Columna thumbnail no existe — reintentando sin thumbnail');
+    const rowsSinThumb = rows.map(r => { const { thumbnail, ...rest } = r; return rest; });
+    const { error: e2 } = await supabase.from('bajas_detectadas').insert(rowsSinThumb);
+    if (!e2) return rows.length;
+    console.warn(`  ⚠️  Bulk insert falló (${e2.message}), insertando de a uno...`);
+    let ok = 0;
+    for (const row of rowsSinThumb) {
+      const { error: e3 } = await supabase.from('bajas_detectadas').insert([row]);
+      if (!e3) ok++; else console.warn(`    ❌ ${row.item_id}: ${e3.message}`);
+    }
+    return ok;
+  }
+
   console.warn(`  ⚠️  Bulk insert falló (${error.message}), insertando de a uno...`);
   let ok = 0;
   for (const row of rows) {
@@ -382,8 +397,9 @@ async function saveChanges(rows) {
         tipo:           'desaparecido_no_confirmado',
         run_id:         DET_RUN_ID,
         fecha_deteccion: NOW,
-        title:          enriched[id]?.title  ?? null,
-        price_anterior: enriched[id]?.price  ?? null,
+        title:          enriched[id]?.title     ?? null,
+        price_anterior: enriched[id]?.price     ?? null,
+        thumbnail:      enriched[id]?.thumbnail ?? null,
       })),
       ...r.nuevos.map(id => ({
         seller_id:      r.sellerId,
@@ -392,8 +408,9 @@ async function saveChanges(rows) {
         tipo:           'nuevo',
         run_id:         DET_RUN_ID,
         fecha_deteccion: NOW,
-        title:          enriched[id]?.title  ?? null,
-        price_anterior: enriched[id]?.price  ?? null,
+        title:          enriched[id]?.title     ?? null,
+        price_anterior: enriched[id]?.price     ?? null,
+        thumbnail:      enriched[id]?.thumbnail ?? null,
       })),
     ];
 
