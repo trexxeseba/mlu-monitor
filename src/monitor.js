@@ -64,12 +64,13 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ─── Oxylabs: scrape una URL y devolver HTML + IDs ───────────────────────────
 async function fetchPage(url) {
-  const payload = JSON.stringify({ source: 'universal', url });
+  // geo_location Uruguay → exit node en UY/AR → menos bloqueos de ML
+  const payload = JSON.stringify({ source: 'universal', url, geo_location: 'Uruguay' });
   const auth    = Buffer.from(`${OXYLABS_USER}:${OXYLABS_PASS}`).toString('base64');
   const res = await httpPost('realtime.oxylabs.io', '/v1/queries', payload, {
     'Content-Type':  'application/json',
     'Authorization': `Basic ${auth}`,
-  }, 60000);
+  }, 55000);
 
   if (res.status !== 200)
     throw new Error(`oxylabs HTTP ${res.status}: ${res.body.slice(0, 200)}`);
@@ -131,7 +132,7 @@ async function scrapeSellerIds(sellerId) {
     if (!hasNextPage || nuevos === 0) break;
 
     page++;
-    await sleep(1000); // pausa cortés entre páginas
+    // Sin sleep entre páginas — Oxylabs maneja la cortesía hacia ML
   }
 
   if (!allIds.size) throw new Error('0 IDs MLU encontrados en todas las páginas');
@@ -306,16 +307,24 @@ async function processSeller(seller, lastValidRunId) {
     console.log(`📌 Sin run válido previo — sin baseline de comparación\n`);
   }
 
-  // Procesar cada seller
+  // Procesar sellers en paralelo — 5 concurrentes (límite PAYG Oxylabs)
   const results   = [];
   let totalItems  = 0;
   let totalFailed = 0;
+  const CONCURRENCY = 5;
 
-  for (const seller of sellers) {
-    const result = await processSeller(seller, lastValidRunId);
-    results.push(result);
-    totalItems  += result.itemsFound;
-    if (result.status === 'failed') totalFailed++;
+  for (let i = 0; i < sellers.length; i += CONCURRENCY) {
+    const batch = sellers.slice(i, i + CONCURRENCY);
+    console.log(`\n⚡ Batch ${Math.floor(i/CONCURRENCY)+1}/${Math.ceil(sellers.length/CONCURRENCY)}: sellers ${batch.map(s=>s.seller_id).join(', ')}`);
+    const batchResults = await Promise.allSettled(
+      batch.map(seller => processSeller(seller, lastValidRunId))
+    );
+    for (const r of batchResults) {
+      const result = r.status === 'fulfilled' ? r.value : { itemsFound: 0, status: 'failed', name: '?', seller_id: '?' };
+      results.push(result);
+      totalItems  += result.itemsFound;
+      if (result.status === 'failed') totalFailed++;
+    }
   }
 
   // ─── Validación del run ───────────────────────────────────────────────────
